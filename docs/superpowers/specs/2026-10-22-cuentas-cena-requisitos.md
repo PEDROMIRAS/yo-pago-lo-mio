@@ -1,4 +1,4 @@
-# Cuentas de la cena — Documento de requisitos
+# Yo pago lo mío — Documento de requisitos
 
 Fecha: 2026-10-22
 

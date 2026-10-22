@@ -1,4 +1,4 @@
-# Cuentas de la cena
+# Yo pago lo mío
 
 PWA en React (Vite + TypeScript) para repartir la cuenta de una cena de grupo. Web estática en GitHub Pages, sin backend.
 

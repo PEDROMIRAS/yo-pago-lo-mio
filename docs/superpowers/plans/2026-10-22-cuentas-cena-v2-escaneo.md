@@ -1,4 +1,4 @@
-# Cuentas de la cena v2: escanear cartas (plan de implementación)
+# Yo pago lo mío v2: escanear cartas (plan de implementación)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

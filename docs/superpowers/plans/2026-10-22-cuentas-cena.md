@@ -1,4 +1,4 @@
-# Cuentas de la cena — Plan de implementación
+# Yo pago lo mío — Plan de implementación
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -688,7 +688,7 @@ npx pwa-assets-generator --preset minimal-2023 public/logo.svg
 - [ ] **Step 2: Configurar `vite.config.ts`**
 
 - `base: process.env.BASE_PATH ?? '/'`.
-- `VitePWA({ registerType: 'autoUpdate', manifest: { name: 'Cuentas de la cena', short_name: 'Cuentas', lang: 'es', display: 'standalone', theme_color, background_color, icons: [192, 512 y maskable generados] }, workbox: { globPatterns: ['**/*.{js,css,html,svg,png,json}'] } })` — `json` en el patrón para que las cartas queden precacheadas.
+- `VitePWA({ registerType: 'autoUpdate', manifest: { name: 'Yo pago lo mío', short_name: 'Pago lo mío', lang: 'es', display: 'standalone', theme_color, background_color, icons: [192, 512 y maskable generados] }, workbox: { globPatterns: ['**/*.{js,css,html,svg,png,json}'] } })` — `json` en el patrón para que las cartas queden precacheadas.
 - Añade el bloque `test: { environment: 'node' }` si no estaba.
 - En `src/main.tsx`: `import { registerSW } from 'virtual:pwa-register'; registerSW({ immediate: true });`.
 
