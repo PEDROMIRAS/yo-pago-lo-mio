@@ -11,7 +11,7 @@ PWA en React (Vite + TypeScript) para repartir la cuenta de una cena de grupo. W
 El usuario pasa fotos o el texto de la carta. Transcríbela a `public/restaurantes/<id>.json` (id en minúsculas, sin tildes, con guiones) y añade `{ "id", "nombre" }` a `public/restaurantes/index.json`.
 
 ```json
-{ "nombre": "Los Padillas", "carta": [{ "categoria": "Raciones", "nombre": "Morcilla", "precio": 6.5 }] }
+{ "nombre": "Merendero Padilla", "carta": [{ "categoria": "Raciones", "nombre": "Morcilla", "precio": 6.5 }] }
 ```
 
 - Precio en euros, como número. Si un plato tiene varios tamaños, va un producto por tamaño: `"Morcilla (media)"`.

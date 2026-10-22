@@ -4,7 +4,7 @@ Fecha: 2026-10-22
 
 ## Problema
 
-En una cena de grupo (p. ej. en Los Padillas) cada uno pide cosas distintas, hay
+En una cena de grupo (p. ej. en Merendero Padilla) cada uno pide cosas distintas, hay
 raciones compartidas entre unos pocos y la cuenta la pagan una o varias personas
 con lo que lleven encima. Queremos una calculadora que diga cuánto le toca a cada
 uno y quién tiene que pagar a quién para cuadrar.
@@ -27,14 +27,14 @@ uno y quién tiene que pagar a quién para cuadrar.
   disponibles está en `public/restaurantes/index.json`:
 
   ```json
-  [{ "id": "padillas", "nombre": "Los Padillas" }]
+  [{ "id": "padillas", "nombre": "Merendero Padilla" }]
   ```
 
 - Formato de carta, lo más simple posible (precio en euros, con decimales):
 
   ```json
   {
-    "nombre": "Los Padillas",
+    "nombre": "Merendero Padilla",
     "carta": [
       { "categoria": "Raciones", "nombre": "Morcilla", "precio": 6.5 },
       { "categoria": "Bebidas",  "nombre": "Caña",     "precio": 2 }
@@ -47,7 +47,7 @@ uno y quién tiene que pagar a quién para cuadrar.
 - Para añadir un restaurante basta con crear su JSON y añadir una línea a `index.json`.
 - **En v1 las cartas se añaden a mano:** el usuario pasa fotos de la carta a Claude
   Code, que las transcribe a `public/restaurantes/<id>.json` y añade la línea a
-  `index.json`. Empieza con Los Padillas.
+  `index.json`. Empieza con Merendero Padilla.
 
 ## Flujo
 

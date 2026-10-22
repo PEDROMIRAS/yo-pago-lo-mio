@@ -212,8 +212,7 @@ Precio a céntimos con `Math.round(precio * 100)`. Normalizar texto con `.normal
 
 - [ ] **Step 4: Crear los JSON**
 
-`public/restaurantes/index.json`: `[{ "id": "padillas", "nombre": "Los Padillas" }]`.
-`public/restaurantes/padillas.json`: formato del spec. **Las cartas que ya estén transcritas en `public/restaurantes/` (las pasa el usuario en fotos y se convierten a mano) se dejan tal cual y se añaden a `index.json`.** Si no hay ninguna de Los Padillas, mete 6 productos de ejemplo (Morcilla 6.5, Patatas bravas 4, Ensalada 9, Albóndigas 8, Caña 2, Tinto de verano 2.5) y deja apuntado en el README que hay que sustituirlos.
+`public/restaurantes/index.json` y `public/restaurantes/padillas.json` ya existen con la carta real de Merendero Padilla (78 productos): no los toques; solo comprueba que `normalizeMenu` acepta `padillas.json` sin errores.
 
 - [ ] **Step 5: Ejecutar y ver que pasa**
 
@@ -541,7 +540,7 @@ Mobile-first, una columna, zonas táctiles ≥ 44 px, barra de pestañas fija ab
 - [ ] **Step 4: Verificar en el navegador**
 
 Crea `.claude/launch.json` con una configuración `dev` (`npm run dev`, puerto 5173) y arráncala. Comprueba, a 375 px de ancho:
-- Sin sesión aparece la lista de restaurantes con “Los Padillas”; al tocarlo se abre la pestaña Gente.
+- Sin sesión aparece la lista de restaurantes con “Merendero Padilla”; al tocarlo se abre la pestaña Gente.
 - Añadir “Ana”, “Bea”; añadir “ana” muestra “Ya hay alguien llamado ana”; añadir vacío muestra “Escribe un nombre”.
 - Recargar la página → aparece “¿Continuar la cena…?” con 2 personas; **Continuar** las recupera.
 - **Nueva cena** → confirmación → vuelve a la lista de restaurantes.
@@ -575,8 +574,8 @@ Buscador arriba (filtra con `matchesQuery`); productos agrupados por `categoria`
 
 - [ ] **Step 3: Verificar en el navegador**
 
-- Buscar “BRAVAS” o “bravás” encuentra Patatas bravas.
-- Morcilla → cantidad 3 → marcar Ana y Bea → Aceptar → la cabecera muestra un total de 19,50 €.
+- Buscar “ALBONDIGAS” encuentra Albóndigas en salsa, y “postres” muestra los 14 postres.
+- Morcillas → cantidad 3 → marcar Ana y Bea → Aceptar → la cabecera muestra un total de 4,80 €.
 - Aceptar sin marcar a nadie → aviso “Elige al menos una persona” y el diálogo sigue abierto.
 - En Gente, tocar “Ana” → Carta con “Añadiendo para Ana”; Caña → el diálogo sale con solo Ana marcada y cantidad 1.
 
@@ -615,12 +614,12 @@ Sin líneas: “Aún no habéis pedido nada”.
 
 - [ ] **Step 2: Verificar en el navegador**
 
-Con Ana, Bea, Carlos: Morcilla ×3 (Ana, Bea), Patatas bravas ×1 (Bea, Ana), Ensalada ×1 (Carlos).
-- Hay 2 bloques: “Ana + Bea” con Morcilla y Patatas en el mismo bloque, y “Carlos”.
+Con Ana, Bea, Carlos: Morcillas ×3 (Ana, Bea), Patatas chips ×1 (Bea, Ana), Ensalada ×1 (Carlos); total 11,10 €.
+- Hay 2 bloques: “Ana + Bea” con Morcillas y Patatas chips en el mismo bloque, y “Carlos”.
 - **+ Persona** → Carlos en el bloque Ana + Bea → pasa a ser “Ana + Bea + Carlos”, con las mismas líneas.
-- **Editar** la morcilla a cantidad 4 → se actualizan el total del bloque, “Lo pedido” y el total de la cabecera.
+- **Editar** las morcillas a cantidad 4 → se actualizan el total del bloque, “Lo pedido” y el total de la cabecera.
 - Borrar a Ana en Gente → aviso “Ana está en algún pedido”.
-- Antes de los cambios anteriores, en “Por persona” y en modo Por consumo: Ana 11,75 €, Bea 11,75 €, Carlos 9,00 €, y Ana ve “3 × Morcilla (entre 2) · 9,75 €” y “1 × Patatas bravas (entre 2) · 2,00 €”. Cambiar a A partes iguales → los tres deben 10,84 / 10,83 / 10,83 €; recargar → sigue en A partes iguales.
+- Antes de los cambios anteriores, en “Por persona” y en modo Por consumo: Ana 3,45 €, Bea 3,45 €, Carlos 4,20 €, y Ana ve “3 × Morcillas (entre 2) · 2,40 €” y “1 × Patatas chips (entre 2) · 1,05 €”. Cambiar a A partes iguales → los tres deben 3,70 €; recargar → sigue en A partes iguales.
 
 - [ ] **Step 3: Commit**
 
@@ -650,11 +649,11 @@ git commit -m "feat: resumen por producto, bloques de reparto y personas"
 
 - [ ] **Step 2: Verificar en el navegador**
 
-Con la cena del Task 7 (antes de editar), total 32,50 €:
-- Ana pone `20,50` → “Faltan 12,00 €” y ninguna transferencia.
-- Carlos pone `12` → aparecen las transferencias, y lo que recibe cada acreedor coincide con su saldo.
+Con la cena del Task 7 (antes de editar), total 11,10 €:
+- Ana pone `5` → “Faltan 6,10 €” y ninguna transferencia.
+- Carlos pone `6,10` → aparecen “Bea → Carlos · 1,90 €” y “Bea → Ana · 1,55 €”.
 - Escribir `abc` → “Importe no válido” y el estado anterior se mantiene.
-- Cambiar a A partes iguales → “le toca” pasa a 10,84 / 10,83 / 10,83 € y las transferencias se recalculan; los importes puestos no cambian.
+- Cambiar a A partes iguales → “le toca” pasa a 3,70 € para los tres y las transferencias se recalculan; los importes puestos no cambian.
 - Recargar → **Continuar** → los importes y el modo siguen ahí.
 
 - [ ] **Step 3: Commit**
@@ -695,7 +694,7 @@ npx pwa-assets-generator --preset minimal-2023 public/logo.svg
 - [ ] **Step 3: Verificar offline**
 
 Run: `npm run build && npx vite preview --port 4173`
-Expected: build sin errores. En el navegador: cargar `http://localhost:4173`, comprobar en DevTools → Application que el service worker está activo y que `restaurantes/padillas.json` está en la caché; activar Offline y recargar → la app abre, se puede empezar una cena en Los Padillas y la carta aparece.
+Expected: build sin errores. En el navegador: cargar `http://localhost:4173`, comprobar en DevTools → Application que el service worker está activo y que `restaurantes/padillas.json` está en la caché; activar Offline y recargar → la app abre, se puede empezar una cena en Merendero Padilla y la carta aparece.
 
 - [ ] **Step 4: Workflow de GitHub Pages**
 
@@ -703,7 +702,7 @@ Expected: build sin errores. En el navegador: cargar `http://localhost:4173`, co
 
 - [ ] **Step 5: README**
 
-En español, cortito: qué es; `npm install`, `npm run dev`, `npm test`; **cómo añadir un restaurante** (crear `public/restaurantes/<id>.json` con el formato y añadir una línea a `index.json`); cómo publicar (subir a GitHub → Settings → Pages → Source: GitHub Actions); cómo instalarla en el móvil (“Añadir a pantalla de inicio”). Si la carta de Los Padillas sigue siendo de ejemplo, avisarlo aquí.
+En español, cortito: qué es; `npm install`, `npm run dev`, `npm test`; **cómo añadir un restaurante** (crear `public/restaurantes/<id>.json` con el formato y añadir una línea a `index.json`); cómo publicar (subir a GitHub → Settings → Pages → Source: GitHub Actions); cómo instalarla en el móvil (“Añadir a pantalla de inicio”). Si la carta de Merendero Padilla sigue siendo de ejemplo, avisarlo aquí.
 
 - [ ] **Step 6: Suite completa y commit**
 
