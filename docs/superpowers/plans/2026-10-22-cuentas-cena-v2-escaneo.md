@@ -6,7 +6,7 @@
 
 **Architecture:** Una Supabase Edge Function (`leer-carta`) guarda la clave de la API y pasa las fotos a Claude Haiku 5.5, que devuelve la carta en JSON. La app la revisa con el usuario y la guarda en `localStorage`; desde ahí funciona igual que una carta del repo, también sin conexión.
 
-**Tech Stack:** lo de v1, más Supabase Edge Functions (Deno), `npm:@anthropic-ai/sdk`, `npm:zod` y el modelo `claude-haiku-5-5`.
+**Tech Stack:** lo de v1, más Supabase Edge Functions (Deno), `npm:@anthropic-ai/sdk` y el modelo `claude-haiku-5-5`. Sin `zod`: la salida estructurada ya obliga a la forma del JSON y la pantalla de revisión vuelve a validar cada fila con `menuFromRows`.
 
 **Spec:** `docs/superpowers/specs/2026-10-22-cuentas-cena-requisitos.md` (sección “v2: escanear una carta”). **Requiere v1 terminada** (`docs/superpowers/plans/2026-10-22-cuentas-cena.md`): usa sus tipos, `parseEuros`, `normalizeMenu`, `loadMenu`, `loadRestaurants` y `App`.
 
@@ -16,7 +16,8 @@
 - La app llama a la función con `fetch`, sin `supabase-js`.
 - La clave de Anthropic vive solo en los secretos de Supabase (`ANTHROPIC_API_KEY`), nunca en el repo ni en el build. Los secretos los mete el usuario, no el agente.
 - Modelo de IA: `claude-haiku-5-5` (el más barato; lo pidió el usuario). No cambiarlo sin preguntar.
-- El coste va a la cuenta de la API del usuario (crédito de prepago); el código del grupo (`CODIGO_GRUPO`) impide que terceros lo gasten.
+- El coste va a la cuenta de la API del usuario (crédito de prepago); el código del grupo (`CODIGO_GRUPO`) impide que terceros lo gasten. Tiene que ser **aleatorio y de 12 caracteres o más**: la URL y la anon key se ven en el código de la app y la función no limita los intentos, así que un código de 4 cifras se adivina en, como mucho, 10.000 peticiones.
+- Ningún código toca el global `localStorage`: se usa `browserStorage` de `src/lib/storage.ts` (v1), que es `null` si el navegador lo bloquea.
 
 ## Review Focus
 
@@ -48,15 +49,15 @@ supabase/functions/leer-carta/validate.test.ts
 - Test: `src/lib/customMenus.test.ts`
 
 **Interfaces:**
-- Consumes: `Menu`, `parseEuros`, `normalizeMenu`.
+- Consumes: `Menu`, `parseEuros`, `normalizeMenu`, `browserStorage`.
 - Produces:
   - `type MenuRow = { categoria: string; nombre: string; precio: string }` (precio tal cual se escribe, `'8,50'`).
-  - `menuFromRows(nombre: string, rows: MenuRow[]): Menu` — recorta los textos, categoría vacía → `'Otros'`, precio con `parseEuros`. Errores: “Pon un nombre al restaurante”, “La carta está vacía”, “Fila N: falta el nombre”, “Fila N: precio no válido” (N empieza en 1).
+  - `menuFromRows(nombre: string, rows: MenuRow[]): Menu` — recorta los textos, categoría vacía → `'Otros'`, precio con `parseEuros`. Errores: “Pon un nombre al restaurante”, “La carta está vacía”, “Fila N: falta el nombre”, “Fila N: precio no válido” (N empieza en 1). Un precio vacío o 0 también es “precio no válido”: `parseEuros('')` devuelve `0` (en v1 un “ha puesto” vacío es no haber pagado), así que hay que rechazar `!cents`, no solo `null`.
   - `menuToJson(menu: Menu): string` — JSON con 2 espacios en el formato del repo (precio en euros).
-  - `loadCustomMenus(storage: Pick<Storage, 'getItem'>): Record<string, Menu>` — clave `cuentas-cartas`; `{}` si falta, está corrupto o el storage lanza.
-  - `saveCustomMenu(storage: Pick<Storage, 'getItem' | 'setItem'>, menu: Menu, now?: number): string` — id `'propia-' + now`.
-  - `deleteCustomMenu(storage: Pick<Storage, 'getItem' | 'setItem'>, id: string): void`
-  - `menu.ts`: `loadRestaurants(storage = localStorage)` devuelve los de `index.json` seguidos de los escaneados (`{ id, nombre: menu.nombre + ' (escaneada)' }`); `loadMenu(id, storage = localStorage)` para ids `propia-…` lee de `loadCustomMenus` sin hacer fetch, y si no la encuentra lanza “Esa carta escaneada ya no está en este móvil”.
+  - `loadCustomMenus(storage: Pick<Storage, 'getItem'> | null): Record<string, Menu>` — clave `cuentas-cartas`; `{}` si falta, está corrupto, el storage es `null` o lanza.
+  - `saveCustomMenu(storage: Pick<Storage, 'getItem' | 'setItem'> | null, menu: Menu, now?: number): string` — id `'propia-' + now`. Con `null` lanza “Este navegador no deja guardar cartas”.
+  - `deleteCustomMenu(storage: Pick<Storage, 'getItem' | 'setItem'> | null, id: string): void`
+  - `menu.ts`: `loadRestaurants(storage = browserStorage)` devuelve los de `index.json` seguidos de los escaneados (`{ id, nombre: menu.nombre + ' (escaneada)' }`); `loadMenu(id, storage = browserStorage)` para ids `propia-…` lee de `loadCustomMenus` sin hacer fetch, y si no la encuentra lanza “Esa carta escaneada ya no está en este móvil”.
 
 - [ ] **Step 1: Escribir los tests que fallan**
 
@@ -87,6 +88,8 @@ test('menuFromRows da errores con número de fila', () => {
   expect(() => menuFromRows('X', [])).toThrow(/vacía/);
   expect(() => menuFromRows('X', [ok, { ...ok, precio: 'dos' }])).toThrow(/Fila 2.*precio/);
   expect(() => menuFromRows('X', [{ ...ok, nombre: '  ' }])).toThrow(/Fila 1.*nombre/);
+  expect(() => menuFromRows('X', [{ ...ok, precio: '' }])).toThrow(/Fila 1.*precio/);
+  expect(() => menuFromRows('X', [{ ...ok, precio: '0' }])).toThrow(/Fila 1.*precio/);
 });
 
 test('menuToJson vuelve al formato del repo y normalizeMenu lo acepta', () => {
@@ -111,6 +114,7 @@ test('loadCustomMenus ignora basura y storage que lanza', () => {
   s.m.set('cuentas-cartas', '{nope');
   expect(loadCustomMenus(s)).toEqual({});
   expect(loadCustomMenus({ getItem: () => { throw new Error('x'); } })).toEqual({});
+  expect(loadCustomMenus(null)).toEqual({});
 });
 ```
 
@@ -124,7 +128,7 @@ Expected: FAIL — no se puede resolver `./customMenus`.
 - [ ] **Step 4: Ejecutar toda la suite**
 
 Run: `npm test`
-Expected: PASS (32 tests).
+Expected: PASS (33 tests).
 
 - [ ] **Step 5: Commit**
 
@@ -197,18 +201,28 @@ Expected: PASS (4 tests)
 
 - [ ] **Step 5: Implementar `index.ts`**
 
-`deno.json` con imports fijados a la versión actual: `"@anthropic-ai/sdk": "npm:@anthropic-ai/sdk@<x.y.z>"`, `"zod": "npm:zod@<x.y.z>"`. `Deno.serve`: si es `OPTIONS` → 204 con CORS; parsear el JSON (si falla → 400 “Petición no válida”); `validateRequest(body, req.headers.get('x-codigo'), Deno.env.get('CODIGO_GRUPO')!)`. Luego:
+`deno.json` con el import fijado a la versión actual: `"@anthropic-ai/sdk": "npm:@anthropic-ai/sdk@<x.y.z>"`. `Deno.serve`: si es `OPTIONS` → 204 con CORS; parsear el JSON (si falla → 400 “Petición no válida”); si `CODIGO_GRUPO` no está definido o tiene menos de 12 caracteres → `console.error` y 502 (no se acepta ningún código); si no, `validateRequest(body, req.headers.get('x-codigo'), Deno.env.get('CODIGO_GRUPO')!)`. Luego:
 
 ```ts
-const CartaSchema = z.object({
-  nombre: z.string(),
-  carta: z.array(z.object({ categoria: z.string(), nombre: z.string(), precio: z.number() })),
-});
+const CARTA_SCHEMA = {
+  type: 'object',
+  properties: {
+    nombre: { type: 'string' },
+    carta: { type: 'array', items: {
+      type: 'object',
+      properties: { categoria: { type: 'string' }, nombre: { type: 'string' }, precio: { type: 'number' } },
+      required: ['categoria', 'nombre', 'precio'],
+      additionalProperties: false,
+    } },
+  },
+  required: ['nombre', 'carta'],
+  additionalProperties: false,
+};
 
-const res = await new Anthropic({ timeout: 120_000 }).messages.parse({ // lee ANTHROPIC_API_KEY
+const res = await new Anthropic({ timeout: 120_000 }).messages.create({ // lee ANTHROPIC_API_KEY
   model: 'claude-haiku-5-5',
   max_tokens: 16000,
-  output_config: { effort: 'low', format: zodOutputFormat(CartaSchema) },
+  output_config: { effort: 'low', format: { type: 'json_schema', schema: CARTA_SCHEMA } },
   system: PROMPT,
   messages: [{ role: 'user', content: [
     ...imagenes.map(data => ({ type: 'image' as const, source: { type: 'base64' as const, media_type: 'image/jpeg' as const, data } })),
@@ -221,7 +235,7 @@ const res = await new Anthropic({ timeout: 120_000 }).messages.parse({ // lee AN
 
 > Transcribes cartas de restaurantes españoles a partir de fotos (pueden ser varias páginas de la misma carta). Incluye todos los productos que tengan precio, con el nombre tal y como aparece. Usa como categoría el apartado de la carta en el que está (Raciones, Bocadillos, Bebidas…); si no hay apartados, pon "Otros". El precio va en euros como número (6,50 € → 6.5). Si un producto tiene varios precios por tamaño (tapa, media, ración…), crea un producto por tamaño con el tamaño entre paréntesis, por ejemplo "Morcilla (media)". Omite los productos sin precio fijo ("según mercado"). En "nombre" pon el nombre del restaurante si aparece en la carta; si no, déjalo vacío.
 
-Respuestas: `stop_reason === 'refusal'`, `parsed_output` nulo o `carta` vacía → 422 “No he podido leer la carta, prueba con otra foto”; `stop_reason === 'max_tokens'` → 422 “La carta es muy larga, prueba con menos fotos a la vez”; un `Anthropic.APIError` → `console.error` y 502 “El servicio de lectura ha fallado, prueba otra vez”; si no, 200 con `parsed_output`. Haiku 5.5 no tiene fallback en el servidor, así que el rechazo se trata como foto ilegible. `effort: 'low'` porque es transcribir; súbelo a `'medium'` solo si en la comprobación del Step 7 se deja productos.
+Respuestas (mira `stop_reason` antes de leer `content`): `stop_reason === 'refusal'`, sin bloque de texto, JSON que no se puede parsear o `carta` vacía → 422 “No he podido leer la carta, prueba con otra foto”; `stop_reason === 'max_tokens'` → 422 “La carta es muy larga, prueba con menos fotos a la vez”; un `Anthropic.APIError` → `console.error` y 502 “El servicio de lectura ha fallado, prueba otra vez”; si no, 200 con `JSON.parse` del texto del primer bloque `text`. Haiku 5.5 no tiene fallback en el servidor, así que el rechazo se trata como foto ilegible. `effort: 'low'` porque es transcribir (Haiku 5.5 admite de `low` a `max`, y su valor por defecto es `medium`, así que hay que ponerlo explícito); súbelo a `'medium'` solo si en la comprobación del Step 7 se deja productos.
 
 - [ ] **Step 6: Desplegar**
 
@@ -230,6 +244,8 @@ Hace falta un proyecto de Supabase del usuario (pregúntale cuál, o que cree un
 ```bash
 npx supabase secrets set ANTHROPIC_API_KEY=... CODIGO_GRUPO=...
 ```
+
+`CODIGO_GRUPO` aleatorio de 12 caracteres o más; para generarlo: `node -e "console.log(require('crypto').randomBytes(9).toString('base64url'))"`.
 
 Después, `npx supabase functions deploy leer-carta` (o `deploy_edge_function` del MCP de Supabase).
 
@@ -245,7 +261,7 @@ node -e "const fs=require('fs');fs.writeFileSync('body.json',JSON.stringify({ima
 curl -s -X POST "$SUPABASE_URL/functions/v1/leer-carta" -H "Authorization: Bearer $SUPABASE_ANON_KEY" -H "x-codigo: $CODIGO" -H "Content-Type: application/json" --data @body.json
 ```
 
-Expected: `{"nombre":…,"carta":[…]}` con los productos de la foto y precios correctos a ojo. Con `x-codigo: mal` → `401` y `{"error":"Código del grupo incorrecto"}`. Borra `body.json` después.
+Expected: `{"nombre":…,"carta":[…]}` con los productos de la foto y precios correctos a ojo. Con `x-codigo: mal` → `401` y `{"error":"Código del grupo incorrecto"}`. Mira en los logs de la función (o añade un `console.log(res.usage)` temporal) los tokens de entrada y salida: con los precios de Haiku 5.5 (0,10 $ / 0,50 $ por millón) una carta de 4 fotos debería quedar en unos 0,2–0,3 céntimos, como dice el spec. Borra `body.json` después.
 
 - [ ] **Step 8: Commit**
 
@@ -260,7 +276,7 @@ git commit -m "feat: función leer-carta con Claude Haiku 5.5"
 
 **Files:**
 - Create: `src/lib/scan.ts`, `src/components/ScanScreen.tsx`, `.env.example`
-- Modify: `src/App.tsx`, `.gitignore` (añadir `.env.local`)
+- Modify: `src/App.tsx` (`.gitignore` ya ignora `.env.local`)
 - Test: `src/lib/scan.test.ts`
 
 **Interfaces:**
@@ -270,7 +286,7 @@ git commit -m "feat: función leer-carta con Claude Haiku 5.5"
   - `resizeImage(file: File, maxSide?: number): Promise<string>` — por defecto 1600 px; `createImageBitmap` + canvas + `toBlob('image/jpeg', 0.8)`; devuelve base64 sin prefijo. Solo navegador, sin test.
   - `scanMenu(imagenes: string[], codigo: string, fetchFn?: typeof fetch): Promise<ScannedMenu>` — URL `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/leer-carta`, cabecera `Authorization: Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`. Errores: `fetchFn` lanza → “Sin conexión: escanear necesita internet”; `401` → “Código del grupo incorrecto”; otro `!ok` → el `error` del body, o “No se pudo leer la carta”.
   - `ScanScreen({ onDone, onCancel }: { onDone: (menuId: string) => void; onCancel: () => void })`
-  - El código del grupo se guarda en `localStorage` con la clave `cuentas-codigo`.
+  - El código del grupo se guarda en `browserStorage` con la clave `cuentas-codigo` (si es `null`, se pide en cada escaneo).
 
 - [ ] **Step 1: Escribir los tests que fallan**
 
@@ -307,7 +323,7 @@ Expected: FAIL — no se puede resolver `./scan`.
 - [ ] **Step 4: Ejecutar y ver que pasa**
 
 Run: `npm test`
-Expected: PASS (34 tests).
+Expected: PASS (35 tests).
 
 - [ ] **Step 5: Implementar `ScanScreen` y engancharla en `App`**
 
@@ -340,7 +356,7 @@ git commit -m "feat: escanear carta con revisión antes de guardar"
 - Modify: `.github/workflows/deploy.yml`, `README.md`
 
 - [ ] **Step 1:** En el paso `npm run build` del workflow, añade `VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}` y `VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}` (variables del repo; la anon key es pública por diseño).
-- [ ] **Step 2:** En el README, añade cómo montar el escaneo: proyecto de Supabase, `supabase secrets set ANTHROPIC_API_KEY=… CODIGO_GRUPO=…`, `supabase functions deploy leer-carta`, las dos variables del repo, que usa Claude Haiku 5.5 y que se cobra al crédito de la API de quien ponga la clave (recomendar un tope sin recarga automática). Explica también cómo subir al repo una carta escaneada con **Descargar JSON**.
+- [ ] **Step 2:** En el README, añade cómo montar el escaneo: proyecto de Supabase, `supabase secrets set ANTHROPIC_API_KEY=… CODIGO_GRUPO=…` (código aleatorio de 12 caracteres o más, con el comando de la Task 2 Step 6, y por qué: la URL y la anon key son públicas y no hay límite de intentos), `supabase functions deploy leer-carta`, las dos variables del repo, que usa Claude Haiku 5.5 y que se cobra al crédito de la API de quien ponga la clave (recomendar un tope sin recarga automática). Explica también cómo subir al repo una carta escaneada con **Descargar JSON**.
 - [ ] **Step 3:** Run: `npm test && npm run build`. Expected: todo en PASS y el build sin errores.
 - [ ] **Step 4: Commit**
 

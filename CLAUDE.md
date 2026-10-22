@@ -17,3 +17,4 @@ El usuario pasa fotos o el texto de la carta. Transcríbela a `public/restaurant
 - Precio en euros, como número. Si un plato tiene varios tamaños, va un producto por tamaño: `"Morcilla (media)"`.
 - Usa las categorías de la carta. Omite lo que no tenga precio fijo.
 - Si un precio no se lee bien, pregunta en vez de inventarlo.
+- Cuando exista el código (Task 2 del plan v1), ejecuta `npm test`: un test comprueba que cada id de `index.json` tiene su fichero y que la carta carga.

@@ -24,7 +24,7 @@
 
 1. **Lo puesto no suma el total** → Pagar muestra “Faltan X €” / “Sobran X €” y ninguna transferencia (test en Task 4: `payStatus`; comprobación manual en Task 8).
 2. **Céntimos que no dividen** (10 € entre 3) → cuotas 3,34 / 3,33 / 3,33 y la suma de cuotas = total exacto, también en los bloques (tests en Task 1 y Task 4).
-3. **Guardado corrupto o de otra versión, o `localStorage` que lanza** (modo privado) → la app arranca limpia y no revienta (tests en Task 3).
+3. **Guardado corrupto o de otra versión, o `localStorage` que lanza** (modo privado, o cookies bloqueadas: ahí lanza solo con *leer* el global `localStorage`) → la app arranca limpia y no revienta (tests en Task 3; nadie toca el global salvo `browserStorage`).
 4. **Sin cobertura en el restaurante** → tras una visita, la app y todas las cartas cargan en modo avión (comprobación manual en Task 9).
 5. **Teclado español con coma** (`20,50`) en el campo “ha puesto” → se interpreta como 20,50 € (test en Task 1).
 
@@ -199,7 +199,20 @@ test('matchesQuery ignora mayúsculas y tildes y busca también en categoría', 
   expect(matchesQuery(item, '')).toBe(true);
   expect(matchesQuery(item, 'morcilla')).toBe(false);
 });
+
+test('todas las cartas de index.json existen y cargan', () => {
+  const files = import.meta.glob<unknown>('../../public/restaurantes/*.json', { eager: true, import: 'default' });
+  const index = files['../../public/restaurantes/index.json'] as { id: string }[];
+  expect(index.length).toBeGreaterThan(0);
+  for (const { id } of index) {
+    const json = files[`../../public/restaurantes/${id}.json`];
+    expect(json, `falta ${id}.json`).toBeDefined();
+    normalizeMenu(json);
+  }
+});
 ```
+
+`import.meta.glob` (de Vite, funciona en Vitest) en vez de `node:fs`, para no necesitar los tipos de Node en `tsconfig.app.json`.
 
 - [ ] **Step 2: Ejecutar y ver que falla**
 
@@ -212,12 +225,12 @@ Precio a céntimos con `Math.round(precio * 100)`. Normalizar texto con `.normal
 
 - [ ] **Step 4: Crear los JSON**
 
-`public/restaurantes/index.json` y `public/restaurantes/padillas.json` ya existen con la carta real de Merendero Padilla (78 productos): no los toques; solo comprueba que `normalizeMenu` acepta `padillas.json` sin errores.
+`public/restaurantes/index.json` y `public/restaurantes/padillas.json` ya existen con la carta real de Merendero Padilla (78 productos): no los toques. El último test del Step 1 comprueba que cargan, y como `npm test` corre en el despliegue, una carta nueva con una errata (precio como texto, id sin fichero) para el build en vez de fallar en la mesa.
 
 - [ ] **Step 5: Ejecutar y ver que pasa**
 
 Run: `npx vitest run src/lib/menu.test.ts`
-Expected: PASS (4 tests)
+Expected: PASS (5 tests)
 
 - [ ] **Step 6: Commit**
 
@@ -247,9 +260,10 @@ git commit -m "feat: carga y búsqueda de cartas en JSON"
   - `addPersonToLines(d: Dinner, lineIds: string[], personaId: string): Dinner` — añade al final de cada línea si no estaba.
   - `setPago(d: Dinner, personaId: string, cents: number): Dinner` — 0 borra la entrada.
   - Validación de línea compartida por add/update: cantidad entera ≥ 1 (“La cantidad tiene que ser 1 o más”), al menos una persona y todas existentes (“Elige al menos una persona”).
-  - `loadSession(storage: Pick<Storage, 'getItem'>): { dinner: Dinner; guardado: number } | null`
-  - `saveSession(storage: Pick<Storage, 'setItem'>, dinner: Dinner, now?: number): void` — guarda `{ version: 1, guardado, dinner }` en la clave `cuentas-cena`.
-  - `clearSession(storage: Pick<Storage, 'removeItem'>): void`
+  - `browserStorage: Storage | null` — `localStorage`, o `null` si leerlo lanza (con las cookies bloqueadas, *acceder* al global ya lanza SecurityError, antes de cualquier `try` de las funciones). Es el único sitio que toca el global; el resto del código usa `browserStorage`.
+  - `loadSession(storage: Pick<Storage, 'getItem'> | null): { dinner: Dinner; guardado: number } | null` — `null` como storage → `null`.
+  - `saveSession(storage: Pick<Storage, 'setItem'> | null, dinner: Dinner, now?: number): void` — guarda `{ version: 1, guardado, dinner }` en la clave `cuentas-cena`; con `null` no hace nada.
+  - `clearSession(storage: Pick<Storage, 'removeItem'> | null): void`
 
 - [ ] **Step 1: Escribir los tests que fallan (`dinner.test.ts`)**
 
@@ -340,6 +354,9 @@ test('storage que lanza no rompe nada', () => {
   expect(loadSession(boom)).toBeNull();
   expect(() => saveSession(boom, createDinner('x'))).not.toThrow();
   expect(() => clearSession(boom)).not.toThrow();
+  expect(loadSession(null)).toBeNull();
+  expect(() => saveSession(null, createDinner('x'))).not.toThrow();
+  expect(() => clearSession(null)).not.toThrow();
 });
 ```
 
@@ -350,7 +367,7 @@ Expected: FAIL — no se pueden resolver los módulos.
 
 - [ ] **Step 4: Implementar `src/lib/dinner.ts` y `src/lib/storage.ts`**
 
-Ids: `'p' + nextId` para personas y `'l' + nextId` para líneas, incrementando `nextId` (empieza en 1). La comparación de nombres duplicados usa `normalizeText` de `menu.ts`. `loadSession` exige `version === 1`, `typeof dinner.restauranteId === 'string'`, `modo` en `'consumo' | 'igual'` y que `personas` y `lineas` sean arrays; cualquier otra cosa → `null`. Todo envuelto en `try/catch`.
+Ids: `'p' + nextId` para personas y `'l' + nextId` para líneas, incrementando `nextId` (empieza en 1). La comparación de nombres duplicados usa `normalizeText` de `menu.ts`. `loadSession` exige `version === 1`, `typeof dinner.restauranteId === 'string'`, `modo` en `'consumo' | 'igual'` y que `personas` y `lineas` sean arrays; cualquier otra cosa → `null`. Todo envuelto en `try/catch`. `browserStorage = (() => { try { return localStorage; } catch { return null; } })()`.
 
 - [ ] **Step 5: Ejecutar y ver que pasan**
 
@@ -497,7 +514,7 @@ Expected: FAIL — no se puede resolver `./calc`.
 - [ ] **Step 4: Ejecutar toda la suite**
 
 Run: `npm test`
-Expected: PASS — todos los tests de `src/lib/` (27).
+Expected: PASS — todos los tests de `src/lib/` (28).
 
 - [ ] **Step 5: Commit**
 
@@ -517,15 +534,15 @@ git commit -m "feat: cálculo de cuotas, bloques y transferencias"
 **Interfaces:**
 - Consumes: todo `src/lib/`.
 - Produces:
-  - `useDinner(): { dinner: Dinner | null; menu: Menu | null; error: string | null; act: (fn: (d: Dinner) => Dinner) => void; start: (restauranteId: string) => Promise<void>; resume: (d: Dinner) => Promise<void>; reset: () => void; clearError: () => void }`
-    - `act` aplica `fn` al estado actual; si lanza, guarda `e.message` en `error` y no cambia nada; si no, actualiza y llama a `saveSession(localStorage, …)`.
+  - `useDinner(): { dinner: Dinner | null; menu: Menu | null; error: string | null; act: (fn: (d: Dinner) => Dinner) => boolean; start: (restauranteId: string) => Promise<void>; resume: (d: Dinner) => Promise<void>; reset: () => void; clearError: () => void }`
+    - `act` aplica `fn` al estado actual; si lanza, guarda `e.message` en `error`, no cambia nada y devuelve `false`; si no, actualiza, llama a `saveSession(browserStorage, …)` y devuelve `true`. Devuelve un booleano porque `error` es estado de React y no se ve actualizado hasta el siguiente render: quien llama a `act` (p. ej. `LineDialog`) necesita saber en el mismo momento si ha ido bien.
     - `start` crea la cena y carga su carta; `resume` carga la carta de una cena guardada; `reset` hace `clearSession` y vuelve a `dinner = null`.
   - `App` controla `tab: 'gente' | 'carta' | 'resumen' | 'pagar'` y `activePersona: string | null` (para “añadir desde la persona”, la usa Task 6).
   - `PeopleTab({ dinner, act, onPick }: { dinner: Dinner; act: …; onPick: (personaId: string) => void })`
 
 - [ ] **Step 1: Implementar el arranque en `App.tsx`**
 
-Al montar: `loadSession(localStorage)`. Si hay sesión → pantalla “¿Continuar la cena en {nombre del restaurante} ({n} personas, guardada a las HH:MM) o empezar una nueva?” con botones **Continuar** (`resume`) y **Nueva cena** (`reset`). Si no → lista de `loadRestaurants()`; tocar uno → `start(id)`. Si falla la carga de carta → mensaje del error y botón **Reintentar**.
+Al montar: `loadSession(browserStorage)`. Si hay sesión → pantalla “¿Continuar la cena en {nombre del restaurante} ({n} personas, guardada a las HH:MM) o empezar una nueva?” con botones **Continuar** (`resume`) y **Nueva cena** (`reset`). Si no → lista de `loadRestaurants()`; tocar uno → `start(id)`. Si falla la carga de carta → mensaje del error y botones **Reintentar** y **Nueva cena** (`reset`): si la cena guardada apunta a una carta que ya no existe (id cambiado o borrado), reintentar falla siempre y sin **Nueva cena** no habría salida.
 
 Con cena activa: cabecera con el nombre del restaurante, el total (`payStatus(dinner).total`) y un botón **Nueva cena** (pide `confirm('¿Borrar esta cena y empezar otra?')`). Barra inferior fija con las 4 pestañas. `error` se muestra como aviso que se cierra al tocarlo.
 
@@ -544,6 +561,7 @@ Crea `.claude/launch.json` con una configuración `dev` (`npm run dev`, puerto 5
 - Añadir “Ana”, “Bea”; añadir “ana” muestra “Ya hay alguien llamado ana”; añadir vacío muestra “Escribe un nombre”.
 - Recargar la página → aparece “¿Continuar la cena…?” con 2 personas; **Continuar** las recupera.
 - **Nueva cena** → confirmación → vuelve a la lista de restaurantes.
+- En DevTools → Application → Local Storage, cambiar el `restauranteId` guardado a `no-existe` y recargar → **Continuar** muestra el error con **Reintentar** y **Nueva cena**; **Nueva cena** vuelve a la lista.
 
 - [ ] **Step 5: Commit**
 
@@ -563,7 +581,7 @@ git commit -m "feat: arranque con recuperación de cena y pestaña Gente"
 **Interfaces:**
 - Consumes: `useDinner().act`, `matchesQuery`, `addLine`, `updateLine`, `formatEuros`, `activePersona` de `App`.
 - Produces:
-  - `LineDialog(props: { open: boolean; titulo: string; personas: Persona[]; inicial: { cantidad: number; personas: string[] }; onAccept: (v: { cantidad: number; personas: string[] }) => void; onClose: () => void })` — usa `<dialog>` nativo (`showModal()` en un efecto). Stepper − / número / + (mínimo 1), una casilla por persona, botón **Todos** que marca/desmarca todo, **Aceptar** y **Cancelar**. No valida: los errores llegan de `dinner.ts` vía `act`, y el diálogo solo se cierra si `act` no ha dejado error. Lo reutilizan Task 6 y Task 7.
+  - `LineDialog(props: { open: boolean; titulo: string; personas: Persona[]; inicial: { cantidad: number; personas: string[] }; onAccept: (v: { cantidad: number; personas: string[] }) => void; onClose: () => void })` — usa `<dialog>` nativo (`showModal()` en un efecto). Stepper − / número / + (mínimo 1), una casilla por persona, botón **Todos** que marca/desmarca todo, **Aceptar** y **Cancelar**. No valida: los errores llegan de `dinner.ts` vía `act`. Quien lo usa cierra el diálogo solo si `act` devuelve `true` (`onAccept={v => { if (act(d => addLine(d, …))) cerrar(); }}`); no se puede mirar `error` justo después, porque aún vale lo de antes del render. Lo reutilizan Task 6 y Task 7.
   - `MenuTab({ dinner, menu, act, activePersona, onClearPersona })`
 
 - [ ] **Step 1: Implementar `LineDialog`** con las props de arriba.
@@ -688,8 +706,8 @@ npx pwa-assets-generator --preset minimal-2023 public/logo.svg
 
 - `base: process.env.BASE_PATH ?? '/'`.
 - `VitePWA({ registerType: 'autoUpdate', manifest: { name: 'Yo pago lo mío', short_name: 'Pago lo mío', lang: 'es', display: 'standalone', theme_color, background_color, icons: [192, 512 y maskable generados] }, workbox: { globPatterns: ['**/*.{js,css,html,svg,png,json}'] } })` — `json` en el patrón para que las cartas queden precacheadas.
-- Añade el bloque `test: { environment: 'node' }` si no estaba.
-- En `src/main.tsx`: `import { registerSW } from 'virtual:pwa-register'; registerSW({ immediate: true });`.
+- **No** añadas un bloque `test` a `vite.config.ts`: `node` ya es el entorno por defecto de Vitest, y la clave `test` no existe en el tipo de configuración de Vite, así que `tsc -b` (que corre en `npm run build`) falla.
+- En `src/main.tsx`: `import { registerSW } from 'virtual:pwa-register'; registerSW({ immediate: true });`. Para que `tsc` encuentre ese módulo, añade `/// <reference types="vite-plugin-pwa/client" />` en `src/vite-env.d.ts` (o `"vite-plugin-pwa/client"` en `types` de `tsconfig.app.json`, según lo que haya generado `create-vite`).
 
 - [ ] **Step 3: Verificar offline**
 
@@ -698,7 +716,7 @@ Expected: build sin errores. En el navegador: cargar `http://localhost:4173`, co
 
 - [ ] **Step 4: Workflow de GitHub Pages**
 
-`.github/workflows/deploy.yml`: en push a `main`, `actions/checkout@v4`, `actions/setup-node@v4` (node 22, cache npm), `npm ci`, `npm test`, `npm run build` con `BASE_PATH: /${{ github.event.repository.name }}/`, `actions/upload-pages-artifact@v3` con `path: dist`, y un job `deploy` con `actions/deploy-pages@v4` (`permissions: pages: write, id-token: write`).
+`.github/workflows/deploy.yml`: en push a `main`, `actions/checkout@v4`, `actions/setup-node@v4` (node 22, cache npm), `npm ci`, `npm test`, `npm run build` con `BASE_PATH: /${{ github.event.repository.name }}/`, `actions/upload-pages-artifact@v3` con `path: dist`, y un job `deploy` con un paso `id: deployment` que usa `actions/deploy-pages@v4` (`permissions: pages: write, id-token: write`, `environment: { name: github-pages, url: ${{ steps.deployment.outputs.page_url }} }`). Antes de escribirlo, comprueba en la plantilla oficial de GitHub Pages para estáticos cuáles son las versiones mayores actuales de estas actions y usa esas.
 
 - [ ] **Step 5: README**
 

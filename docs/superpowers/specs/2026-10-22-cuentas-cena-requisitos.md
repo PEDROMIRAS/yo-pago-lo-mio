@@ -51,8 +51,10 @@ uno y quién tiene que pagar a quién para cuadrar.
 
 ## Flujo
 
-1. **Inicio**: si hay una cena guardada, preguntar *“¿Continuar la cena en Los
-   Padillas o empezar una nueva?”*. Si no, elegir restaurante.
+1. **Inicio**: si hay una cena guardada, preguntar *“¿Continuar la cena en Merendero
+   Padilla o empezar una nueva?”*. Si no, elegir restaurante. Si la carta de la cena
+   guardada no carga, se puede reintentar o empezar una nueva (nunca una pantalla sin
+   salida).
 2. **Gente**: añadir a las personas que cenan. Se puede añadir gente en cualquier
    momento. Una persona solo se puede borrar si no está en ningún pedido.
 3. **Carta**: lista de la carta por categorías, con **buscador** (ignora mayúsculas
@@ -108,7 +110,9 @@ cuotas y transferencias.
   total de la cuenta entre todos los comensales, con la misma regla de céntimos.
 - Si no divide exacto, el resto se reparte céntimo a céntimo empezando por la
   primera persona de la línea (10 € entre 3 → 3,34 + 3,33 + 3,33). La suma de las
-  cuotas es **siempre** el total exacto.
+  cuotas es **siempre** el total exacto. Decisión consciente: si muchas líneas no
+  dividen exacto, el primero de esas líneas puede pagar unos céntimos más en total
+  (un céntimo por línea como mucho). Se acepta a cambio de una regla simple.
 - Cuota de una persona (por consumo) = suma de sus partes en todas las líneas.
   Alguien sin líneas tiene cuota 0. (A partes iguales, todos pagan lo mismo,
   también quien no tiene líneas.)
@@ -119,7 +123,9 @@ cuotas y transferencias.
 - Una única cena guardada en `localStorage`; cada cambio la sobrescribe.
 - Sobrevive a recargar la página y a cerrar el navegador.
 - Si lo guardado está corrupto o es de otra versión → se ignora y se empieza limpio.
-- Si `localStorage` no está disponible, la app funciona igual (sin guardar).
+- Si `localStorage` no está disponible, la app funciona igual (sin guardar). Incluye
+  navegadores con las cookies bloqueadas, donde solo con leer `localStorage` ya salta
+  un error.
 - “Nueva cena” (con confirmación) borra lo guardado.
 
 ## Fuera de alcance (v1)
@@ -155,7 +161,8 @@ Reglas:
 - Escanear necesita conexión; sin ella, mensaje claro y se sigue con las cartas que
   ya hay.
 - La función exige un **código del grupo** (se pide la primera vez y se recuerda en
-  el móvil) para que nadie ajeno gaste créditos.
+  el móvil) para que nadie ajeno gaste créditos. Tiene que ser aleatorio y de 12
+  caracteres o más: la dirección de la función es pública y no hay límite de intentos.
 - Varios tamaños de un plato (media / entera) → un producto por tamaño.
 - Si la foto no se puede leer, se avisa y se puede repetir; nunca se guarda una carta
   sin pasar por la revisión.
