@@ -406,7 +406,7 @@ git commit -m "feat: operaciones de la cena y guardado en localStorage"
 
 Algoritmo de `settle` (greedy, ≤ n−1 pagos): separar deudores (saldo < 0, como importe positivo) y acreedores (saldo > 0); ordenar cada lista por importe descendente, empate por posición en `orden`; con dos punteros, transferir `min(deuda, crédito)` del primer deudor al primer acreedor, restar, avanzar el que llegue a 0.
 
-- [ ] **Step 1: Escribir los tests que fallan**
+- [x] **Step 1: Escribir los tests que fallan**
 
 ```ts
 import { expect, test } from 'vitest';
@@ -504,19 +504,19 @@ test('persona sin pedidos que puso dinero recibe la devolución', () => {
 });
 ```
 
-- [ ] **Step 2: Ejecutar y ver que falla**
+- [x] **Step 2: Ejecutar y ver que falla**
 
 Run: `npx vitest run src/lib/calc.test.ts`
 Expected: FAIL — no se puede resolver `./calc`.
 
-- [ ] **Step 3: Implementar `src/lib/calc.ts`** con las firmas y el algoritmo de arriba.
+- [x] **Step 3: Implementar `src/lib/calc.ts`** con las firmas y el algoritmo de arriba.
 
-- [ ] **Step 4: Ejecutar toda la suite**
+- [x] **Step 4: Ejecutar toda la suite**
 
 Run: `npm test`
 Expected: PASS — todos los tests de `src/lib/` (28).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
