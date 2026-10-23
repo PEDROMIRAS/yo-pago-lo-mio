@@ -693,7 +693,7 @@ git commit -m "feat: pantalla de pago con transferencias"
 - Consumes: el build completo.
 - Produces: la app instalable y publicada.
 
-- [ ] **Step 1: Iconos**
+- [x] **Step 1: Iconos**
 
 Crea `public/logo.svg` (un icono simple, p. ej. un plato o un ticket sobre fondo de color) y genera los PNG:
 
@@ -702,27 +702,27 @@ npm install -D vite-plugin-pwa @vite-pwa/assets-generator
 npx pwa-assets-generator --preset minimal-2023 public/logo.svg
 ```
 
-- [ ] **Step 2: Configurar `vite.config.ts`**
+- [x] **Step 2: Configurar `vite.config.ts`**
 
 - `base: process.env.BASE_PATH ?? '/'`.
 - `VitePWA({ registerType: 'autoUpdate', manifest: { name: 'Yo pago lo mío', short_name: 'Pago lo mío', lang: 'es', display: 'standalone', theme_color, background_color, icons: [192, 512 y maskable generados] }, workbox: { globPatterns: ['**/*.{js,css,html,svg,png,json}'] } })` — `json` en el patrón para que las cartas queden precacheadas.
 - **No** añadas un bloque `test` a `vite.config.ts`: `node` ya es el entorno por defecto de Vitest, y la clave `test` no existe en el tipo de configuración de Vite, así que `tsc -b` (que corre en `npm run build`) falla.
 - En `src/main.tsx`: `import { registerSW } from 'virtual:pwa-register'; registerSW({ immediate: true });`. Para que `tsc` encuentre ese módulo, añade `/// <reference types="vite-plugin-pwa/client" />` en `src/vite-env.d.ts` (o `"vite-plugin-pwa/client"` en `types` de `tsconfig.app.json`, según lo que haya generado `create-vite`).
 
-- [ ] **Step 3: Verificar offline**
+- [x] **Step 3: Verificar offline**
 
 Run: `npm run build && npx vite preview --port 4173`
 Expected: build sin errores. En el navegador: cargar `http://localhost:4173`, comprobar en DevTools → Application que el service worker está activo y que `restaurantes/padillas.json` está en la caché; activar Offline y recargar → la app abre, se puede empezar una cena en Merendero Padilla y la carta aparece.
 
-- [ ] **Step 4: Workflow de GitHub Pages**
+- [x] **Step 4: Workflow de GitHub Pages**
 
 `.github/workflows/deploy.yml`: en push a `main`, `actions/checkout@v4`, `actions/setup-node@v4` (node 22, cache npm), `npm ci`, `npm test`, `npm run build` con `BASE_PATH: /${{ github.event.repository.name }}/`, `actions/upload-pages-artifact@v3` con `path: dist`, y un job `deploy` con un paso `id: deployment` que usa `actions/deploy-pages@v4` (`permissions: pages: write, id-token: write`, `environment: { name: github-pages, url: ${{ steps.deployment.outputs.page_url }} }`). Antes de escribirlo, comprueba en la plantilla oficial de GitHub Pages para estáticos cuáles son las versiones mayores actuales de estas actions y usa esas.
 
-- [ ] **Step 5: README**
+- [x] **Step 5: README**
 
 En español, cortito: qué es; `npm install`, `npm run dev`, `npm test`; **cómo añadir un restaurante** (crear `public/restaurantes/<id>.json` con el formato y añadir una línea a `index.json`); cómo publicar (subir a GitHub → Settings → Pages → Source: GitHub Actions); cómo instalarla en el móvil (“Añadir a pantalla de inicio”). Si la carta de Merendero Padilla sigue siendo de ejemplo, avisarlo aquí.
 
-- [ ] **Step 6: Suite completa y commit**
+- [x] **Step 6: Suite completa y commit**
 
 Run: `npm test && npm run build`
 Expected: todos los tests en PASS y el build sin errores.

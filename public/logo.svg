@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#c2410c"/>
+  <path d="M146 96h220v300l-27.5-22-27.5 22-27.5-22-27.5 22-27.5-22-27.5 22-27.5-22-27.5 22z" fill="#fffaf3"/>
+  <path d="M190 160h132M190 210h132" stroke="#e6dccf" stroke-width="18" stroke-linecap="round"/>
+  <text x="256" y="330" font-family="Arial, Helvetica, sans-serif" font-size="120" font-weight="700" fill="#c2410c" text-anchor="middle">€</text>
+</svg>
