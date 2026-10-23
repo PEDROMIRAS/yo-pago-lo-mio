@@ -265,7 +265,7 @@ git commit -m "feat: carga y búsqueda de cartas en JSON"
   - `saveSession(storage: Pick<Storage, 'setItem'> | null, dinner: Dinner, now?: number): void` — guarda `{ version: 1, guardado, dinner }` en la clave `cuentas-cena`; con `null` no hace nada.
   - `clearSession(storage: Pick<Storage, 'removeItem'> | null): void`
 
-- [ ] **Step 1: Escribir los tests que fallan (`dinner.test.ts`)**
+- [x] **Step 1: Escribir los tests que fallan (`dinner.test.ts`)**
 
 ```ts
 import { expect, test } from 'vitest';
@@ -319,7 +319,7 @@ test('modo por defecto consumo; setModo lo cambia sin tocar pedido ni pagos', ()
 });
 ```
 
-- [ ] **Step 2: Escribir los tests que fallan (`storage.test.ts`)**
+- [x] **Step 2: Escribir los tests que fallan (`storage.test.ts`)**
 
 ```ts
 import { expect, test } from 'vitest';
@@ -360,21 +360,21 @@ test('storage que lanza no rompe nada', () => {
 });
 ```
 
-- [ ] **Step 3: Ejecutar y ver que fallan**
+- [x] **Step 3: Ejecutar y ver que fallan**
 
 Run: `npx vitest run src/lib/dinner.test.ts src/lib/storage.test.ts`
 Expected: FAIL — no se pueden resolver los módulos.
 
-- [ ] **Step 4: Implementar `src/lib/dinner.ts` y `src/lib/storage.ts`**
+- [x] **Step 4: Implementar `src/lib/dinner.ts` y `src/lib/storage.ts`**
 
 Ids: `'p' + nextId` para personas y `'l' + nextId` para líneas, incrementando `nextId` (empieza en 1). La comparación de nombres duplicados usa `normalizeText` de `menu.ts`. `loadSession` exige `version === 1`, `typeof dinner.restauranteId === 'string'`, `modo` en `'consumo' | 'igual'` y que `personas` y `lineas` sean arrays; cualquier otra cosa → `null`. Todo envuelto en `try/catch`. `browserStorage = (() => { try { return localStorage; } catch { return null; } })()`.
 
-- [ ] **Step 5: Ejecutar y ver que pasan**
+- [x] **Step 5: Ejecutar y ver que pasan**
 
 Run: `npx vitest run src/lib/dinner.test.ts src/lib/storage.test.ts`
 Expected: PASS (8 tests)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add -A
