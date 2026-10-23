@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Persona } from '../types';
 import { Modal } from './Modal';
+import { Icon } from './Icon';
 
 type Valor = { cantidad: number; personas: string[] };
 type Props = {
@@ -42,11 +43,13 @@ function LineForm({ titulo, personas, inicial, error, onAccept, onClose }: Omit<
 
       <div className="row stepper">
         <button type="button" aria-label="Menos" onClick={() => setCantidad(c => Math.max(1, c - 1))}>
-          −
+          <Icon name="minus" />
         </button>
-        <output aria-label="Cantidad">{cantidad}</output>
+        <output aria-label="Cantidad">
+          {cantidad}
+        </output>
         <button type="button" aria-label="Más" onClick={() => setCantidad(c => c + 1)}>
-          +
+          <Icon name="plus" />
         </button>
       </div>
 

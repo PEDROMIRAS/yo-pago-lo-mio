@@ -8,6 +8,8 @@ import { LineDialog } from './LineDialog';
 import { MenuList } from './MenuList';
 import { Modal } from './Modal';
 import { ModeToggle } from './ModeToggle';
+import { Icon } from './Icon';
+import { EmptyState } from './EmptyState';
 
 type Edicion =
   | { tipo: 'editar'; linea: Linea }
@@ -21,11 +23,21 @@ export function SummaryTab(props: {
   act: Act;
   error: string | null;
   clearError: () => void;
+  onGoMenu: () => void;
 }) {
-  const { dinner, menu, act, error, clearError } = props;
+  const { dinner, menu, act, error, clearError, onGoMenu } = props;
   const [edicion, setEdicion] = useState<Edicion>(null);
 
-  if (dinner.lineas.length === 0) return <p className="muted">Aún no habéis pedido nada.</p>;
+  if (dinner.lineas.length === 0) {
+    return (
+      <EmptyState
+        icon="receipt"
+        titulo="Aún no habéis pedido nada"
+        texto="Cuando apuntéis platos en la carta, aquí veréis lo que le toca a cada uno."
+        accion={{ label: 'Ir a la carta', onClick: onGoMenu }}
+      />
+    );
+  }
 
   const nombre = (id: string) => dinner.personas.find(p => p.id === id)?.nombre ?? '?';
   const { total } = payStatus(dinner);
@@ -46,7 +58,7 @@ export function SummaryTab(props: {
           Total {formatEuros(total)} entre {dinner.personas.length} personas
         </p>
       )}
-      <ul className="list">
+      <ul className="rows">
         {dinner.personas.map(p => (
           <li key={p.id}>
             <div className="row">
@@ -90,7 +102,7 @@ export function SummaryTab(props: {
                 {min === max ? formatEuros(min) : `${formatEuros(min).replace(/\s*€/, '')}–${formatEuros(max)}`} cada uno
               </p>
             )}
-            <ul className="list">
+            <ul className="rows">
               {b.lineas.map(l => (
                 <li key={l.id} className="row">
                   <span className="grow">
@@ -101,11 +113,11 @@ export function SummaryTab(props: {
                   </button>
                   <button
                     type="button"
-                    className="icon"
+                    className="icon ghost"
                     aria-label={`Borrar ${l.producto}`}
                     onClick={() => act(d => removeLine(d, l.id))}
                   >
-                    ✕
+                    <Icon name="x" size={18} />
                   </button>
                 </li>
               ))}
@@ -117,7 +129,7 @@ export function SummaryTab(props: {
                   value=""
                   onChange={e => act(d => addPersonToLines(d, b.lineas.map(l => l.id), e.target.value))}
                 >
-                  <option value="">+ Persona</option>
+                  <option value="">Añadir a…</option>
                   {fuera.map(p => (
                     <option key={p.id} value={p.id}>
                       {p.nombre}
@@ -126,7 +138,8 @@ export function SummaryTab(props: {
                 </select>
               )}
               <button type="button" onClick={() => abrir({ tipo: 'elegir', personas: b.personas })}>
-                + Producto
+                <Icon name="plus" size={18} />
+                Producto
               </button>
             </div>
           </article>
@@ -134,7 +147,7 @@ export function SummaryTab(props: {
       })}
 
       <h2>Lo pedido</h2>
-      <ul className="list">
+      <ul className="rows">
         {totales.map(it => (
           <li key={it.producto} className="row">
             <span className="grow">
@@ -152,8 +165,8 @@ export function SummaryTab(props: {
       <Modal open={edicion?.tipo === 'elegir'} onClose={() => setEdicion(null)} label="Elegir producto">
         <div className="row">
           <h2 className="grow">Elegir producto</h2>
-          <button type="button" className="icon" aria-label="Cerrar" onClick={() => setEdicion(null)}>
-            ✕
+          <button type="button" className="icon ghost" aria-label="Cerrar" onClick={() => setEdicion(null)}>
+            <Icon name="x" size={18} />
           </button>
         </div>
         <MenuList

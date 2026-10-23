@@ -6,6 +6,8 @@ import { itemTotals } from '../lib/calc';
 import { formatEuros } from '../lib/money';
 import { LineDialog } from './LineDialog';
 import { MenuList } from './MenuList';
+import { EmptyState } from './EmptyState';
+import { Icon } from './Icon';
 
 export function MenuTab(props: {
   dinner: Dinner;
@@ -31,12 +33,12 @@ export function MenuTab(props: {
 
   if (dinner.personas.length === 0) {
     return (
-      <section className="center">
-        <p>Añade primero a la gente.</p>
-        <button type="button" className="primary" onClick={onGoPeople}>
-          Ir a Gente
-        </button>
-      </section>
+      <EmptyState
+        icon="users"
+        titulo="Primero, la gente"
+        texto="Para repartir cada plato necesito saber quién está en la mesa."
+        accion={{ label: 'Ir a Gente', onClick: onGoPeople }}
+      />
     );
   }
 
@@ -52,8 +54,8 @@ export function MenuTab(props: {
           <span className="grow">
             Añadiendo para <strong>{activa.nombre}</strong>
           </span>
-          <button type="button" className="icon" aria-label="Dejar de añadir para una persona" onClick={onClearPersona}>
-            ✕
+          <button type="button" className="icon ghost" aria-label="Dejar de añadir para una persona" onClick={onClearPersona}>
+            <Icon name="x" size={18} />
           </button>
         </div>
       )}
@@ -85,6 +87,7 @@ export function MenuTab(props: {
       />
 
       <p className={hecho ? 'snackbar show' : 'snackbar'} role="status">
+        {hecho && <Icon name="check" size={18} />}
         {hecho}
       </p>
     </section>

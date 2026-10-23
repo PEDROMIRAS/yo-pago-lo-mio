@@ -1,19 +1,32 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { Dinner } from '../types';
 import type { Act } from '../useDinner';
 import { setModo, setPago } from '../lib/dinner';
 import { balances, payStatus, settle, shares } from '../lib/calc';
 import { formatEuros, parseEuros } from '../lib/money';
 import { ModeToggle } from './ModeToggle';
+import { Icon } from './Icon';
+import { EmptyState } from './EmptyState';
 
 const aTexto = (cents: number | undefined) => (cents ? (cents / 100).toFixed(2).replace('.', ',') : '');
 
-export function PayTab({ dinner, act }: { dinner: Dinner; act: Act }) {
+export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; onGoMenu: () => void }) {
   // lo que se está escribiendo; solo pasa a la cena al salir del campo
   const [textos, setTextos] = useState<Record<string, string>>(() =>
     Object.fromEntries(dinner.personas.map(p => [p.id, aTexto(dinner.pagos[p.id])])),
   );
   const [malos, setMalos] = useState<Set<string>>(new Set());
+
+  if (dinner.lineas.length === 0) {
+    return (
+      <EmptyState
+        icon="wallet"
+        titulo="No hay nada que pagar todavía"
+        texto="Apuntad lo que pedís en la carta y aquí saldrá quién paga a quién."
+        accion={{ label: 'Ir a la carta', onClick: onGoMenu }}
+      />
+    );
+  }
 
   const cuotas = shares(dinner);
   const { total, pagado, diferencia } = payStatus(dinner);
@@ -43,11 +56,11 @@ export function PayTab({ dinner, act }: { dinner: Dinner; act: Act }) {
     <section>
       <ModeToggle modo={dinner.modo} onChange={m => act(d => setModo(d, m))} />
 
-      <ul className="list pay">
-        {dinner.personas.map(p => {
+      <ul className="rows pay">
+        {dinner.personas.map((p, i) => {
           const malo = malos.has(p.id);
           return (
-            <li key={p.id}>
+            <li key={p.id} style={{ '--i': i } as CSSProperties}>
               <div className="row">
                 <div className="grow">
                   <strong>{p.nombre}</strong>
@@ -94,11 +107,14 @@ export function PayTab({ dinner, act }: { dinner: Dinner; act: Act }) {
           ) : (
             <>
               <h2>Quién paga a quién</h2>
-              <ul className="list">
-                {transferencias.map(t => (
-                  <li key={`${t.de}-${t.a}`} className="row">
-                    <span className="grow">
-                      {nombre(t.de)} → {nombre(t.a)}
+              <ul className="rows">
+                {transferencias.map((t, i) => (
+                  <li key={`${t.de}-${t.a}`} className="row" style={{ '--i': i } as CSSProperties}>
+                    <span className="grow row transfer">
+                      {nombre(t.de)}
+                      <Icon name="arrow" size={18} />
+                      <span className="sr-only">paga a</span>
+                      {nombre(t.a)}
                     </span>
                     <strong>{formatEuros(t.importe)}</strong>
                   </li>

@@ -9,13 +9,15 @@ import { PeopleTab } from './components/PeopleTab';
 import { MenuTab } from './components/MenuTab';
 import { SummaryTab } from './components/SummaryTab';
 import { PayTab } from './components/PayTab';
+import { Icon, type IconName } from './components/Icon';
+import { Skeleton } from './components/Skeleton';
 
 type Tab = 'gente' | 'carta' | 'resumen' | 'pagar';
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'gente', label: 'Gente' },
-  { id: 'carta', label: 'Carta' },
-  { id: 'resumen', label: 'Resumen' },
-  { id: 'pagar', label: 'Pagar' },
+const TABS: { id: Tab; label: string; icon: IconName }[] = [
+  { id: 'gente', label: 'Gente', icon: 'users' },
+  { id: 'carta', label: 'Carta', icon: 'list' },
+  { id: 'resumen', label: 'Resumen', icon: 'receipt' },
+  { id: 'pagar', label: 'Pagar', icon: 'wallet' },
 ];
 
 const hora = (ms: number) => new Date(ms).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
@@ -87,15 +89,15 @@ export default function App() {
             </button>
           </>
         ) : !restaurantes ? (
-          <p className="muted">Cargando…</p>
+          <Skeleton filas={2} alto={56} />
         ) : (
           <ul className="list">
             {restaurantes.map(r => (
               <li key={r.id}>
                 <button type="button" className="wide row pick" onClick={() => start(r.id)}>
                   <span className="grow">{r.nombre}</span>
-                  <span className="chevron" aria-hidden="true">
-                    ›
+                  <span className="chevron">
+                    <Icon name="chevron" />
                   </span>
                 </button>
               </li>
@@ -120,7 +122,7 @@ export default function App() {
             </button>
           </>
         ) : (
-          <p className="muted">Cargando carta…</p>
+          <Skeleton filas={8} alto={44} />
         )}
       </main>
     );
@@ -135,11 +137,13 @@ export default function App() {
 
       {error && (
         <button type="button" className="toast" onClick={clearError}>
-          {error} <span aria-hidden="true">✕</span>
+          <span className="grow">{error}</span>
+          <Icon name="x" size={18} />
         </button>
       )}
 
-      <main className="content">
+      {/* key: cada pestaña entra con su animación */}
+      <main className="content" key={tab}>
         {tab === 'gente' && (
           <PeopleTab
             dinner={dinner}
@@ -166,9 +170,16 @@ export default function App() {
           />
         )}
         {tab === 'resumen' && (
-          <SummaryTab dinner={dinner} menu={menu} act={act} error={error} clearError={clearError} />
+          <SummaryTab
+            dinner={dinner}
+            menu={menu}
+            act={act}
+            error={error}
+            clearError={clearError}
+            onGoMenu={() => setTab('carta')}
+          />
         )}
-        {tab === 'pagar' && <PayTab dinner={dinner} act={act} />}
+        {tab === 'pagar' && <PayTab dinner={dinner} act={act} onGoMenu={() => setTab('carta')} />}
       </main>
 
       <nav className="tabs">
@@ -179,7 +190,8 @@ export default function App() {
             aria-current={tab === t.id ? 'page' : undefined}
             onClick={() => setTab(t.id)}
           >
-            {t.label}
+            <Icon name={t.icon} size={22} />
+            <span>{t.label}</span>
           </button>
         ))}
       </nav>
