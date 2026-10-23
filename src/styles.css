@@ -248,3 +248,57 @@ fieldset {
 .actions {
   justify-content: flex-end;
 }
+
+h2 {
+  margin: 24px 0 8px;
+  font-size: 1.15rem;
+}
+
+section > h2:first-child {
+  margin-top: 0;
+}
+
+.plain {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.card {
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.add {
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.add select {
+  flex: 1;
+  min-width: 140px;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.segmented button {
+  border: none;
+  border-radius: 0;
+}
+
+.segmented button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-fg);
+}

@@ -618,7 +618,7 @@ git commit -m "feat: carta con buscador y formulario de reparto"
   - `ModeToggle({ modo, onChange }: { modo: Modo; onChange: (m: Modo) => void })` en `src/components/ModeToggle.tsx` — dos botones tipo segmento, “Por consumo” / “A partes iguales”, con `aria-pressed`. Lo usan Task 7 y Task 8 con `onChange={m => act(d => setModo(d, m))}`.
   - `SummaryTab({ dinner, menu, act })`
 
-- [ ] **Step 1: Implementar `SummaryTab`**
+- [x] **Step 1: Implementar `SummaryTab`**
 
 Tres secciones:
 1. **Lo pedido**: `itemTotals` → “Morcilla ×3 · 19,50 €”.
@@ -630,7 +630,7 @@ Tres secciones:
 
 Sin líneas: “Aún no habéis pedido nada”.
 
-- [ ] **Step 2: Verificar en el navegador**
+- [x] **Step 2: Verificar en el navegador**
 
 Con Ana, Bea, Carlos: Morcillas ×3 (Ana, Bea), Patatas chips ×1 (Bea, Ana), Ensalada ×1 (Carlos); total 11,10 €.
 - Hay 2 bloques: “Ana + Bea” con Morcillas y Patatas chips en el mismo bloque, y “Carlos”.
@@ -639,7 +639,7 @@ Con Ana, Bea, Carlos: Morcillas ×3 (Ana, Bea), Patatas chips ×1 (Bea, Ana), En
 - Borrar a Ana en Gente → aviso “Ana está en algún pedido”.
 - Antes de los cambios anteriores, en “Por persona” y en modo Por consumo: Ana 3,45 €, Bea 3,45 €, Carlos 4,20 €, y Ana ve “3 × Morcillas (entre 2) · 2,40 €” y “1 × Patatas chips (entre 2) · 1,05 €”. Cambiar a A partes iguales → los tres deben 3,70 €; recargar → sigue en A partes iguales.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add -A

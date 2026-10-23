@@ -7,6 +7,7 @@ import { payStatus } from './lib/calc';
 import { formatEuros } from './lib/money';
 import { PeopleTab } from './components/PeopleTab';
 import { MenuTab } from './components/MenuTab';
+import { SummaryTab } from './components/SummaryTab';
 
 type Tab = 'gente' | 'carta' | 'resumen' | 'pagar';
 const TABS: { id: Tab; label: string }[] = [
@@ -160,7 +161,10 @@ export default function App() {
             onGoPeople={() => setTab('gente')}
           />
         )}
-        {(tab === 'resumen' || tab === 'pagar') && <p className="muted">Próximamente.</p>}
+        {tab === 'resumen' && (
+          <SummaryTab dinner={dinner} menu={menu} act={act} error={error} clearError={clearError} />
+        )}
+        {tab === 'pagar' && <p className="muted">Próximamente.</p>}
       </main>
 
       <nav className="tabs">
