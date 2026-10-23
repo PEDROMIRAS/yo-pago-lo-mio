@@ -9,10 +9,12 @@ import { shares } from '../lib/calc';
 import { item, itemExit } from '../motion';
 import { EmptyState } from './EmptyState';
 import { Euros } from './Euros';
+import { ConfirmDialog } from './ConfirmDialog';
 
 export function PeopleTab(props: { dinner: Dinner; act: Act; onPick: (personaId: string) => void; onReset: () => void }) {
   const { dinner, act, onPick, onReset } = props;
   const [nombre, setNombre] = useState('');
+  const [borrar, setBorrar] = useState(false);
   const cuotas = shares(dinner);
 
   return (
@@ -93,10 +95,19 @@ export function PeopleTab(props: { dinner: Dinner; act: Act; onPick: (personaId:
       <button
         type="button"
         className="btn mt-10 w-full border-error text-error"
-        onClick={() => confirm('¿Borrar esta cena y empezar otra?') && onReset()}
+        onClick={() => setBorrar(true)}
       >
         Nueva cena
       </button>
+
+      <ConfirmDialog
+        open={borrar}
+        titulo="¿Empezar otra cena?"
+        texto="Se borrará esta cena con todo lo apuntado. No se puede deshacer."
+        confirmar="Borrar y empezar"
+        onConfirm={onReset}
+        onCancel={() => setBorrar(false)}
+      />
     </section>
   );
 }

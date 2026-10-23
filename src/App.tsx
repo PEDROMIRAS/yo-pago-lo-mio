@@ -15,6 +15,7 @@ import { PayTab } from './components/PayTab';
 import { Skeleton } from './components/Skeleton';
 import { Euros } from './components/Euros';
 import { Inicio, Restaurantes } from './components/Inicio';
+import { ConfirmDialog } from './components/ConfirmDialog';
 
 type Tab = 'gente' | 'carta' | 'resumen' | 'pagar';
 const TABS: { id: Tab; label: string; icon: Icon }[] = [
@@ -39,6 +40,7 @@ export default function App() {
   const [{ tab, dir }, setNav] = useState<{ tab: Tab; dir: number }>({ tab: 'gente', dir: 1 });
   // antes de tener cena: portada o elegir restaurante, con la misma dirección de deslizamiento
   const [inicio, setInicio] = useState<{ pantalla: 'inicio' | 'restaurantes'; dir: number }>({ pantalla: 'inicio', dir: 1 });
+  const [pedirBorrar, setPedirBorrar] = useState(false);
   const [activePersona, setActivePersona] = useState<string | null>(null);
   const [ultimas, setUltimas] = useState<string[]>([]); // última selección del diálogo de la carta
 
@@ -92,11 +94,10 @@ export default function App() {
               <Inicio
                 guardada={guardada}
                 onContinuar={() => saved && resume(saved.dinner)}
-                onNueva={() => {
+                onNueva={() =>
                   // empezar otra cena sustituye a la guardada: preguntar antes de perderla
-                  if (saved && !confirm('Hay una cena guardada. ¿Empezar otra y borrarla?')) return;
-                  setInicio({ pantalla: 'restaurantes', dir: 1 });
-                }}
+                  saved ? setPedirBorrar(true) : setInicio({ pantalla: 'restaurantes', dir: 1 })
+                }
               />
             ) : (
               <Restaurantes
@@ -115,6 +116,17 @@ export default function App() {
             )}
           </m.main>
         </AnimatePresence>
+        <ConfirmDialog
+          open={pedirBorrar}
+          titulo="Hay una cena guardada"
+          texto={`Si empiezas otra, se borrará la cena en ${guardada?.restaurante ?? 'curso'}.`}
+          confirmar="Empezar otra"
+          onConfirm={() => {
+            setPedirBorrar(false);
+            setInicio({ pantalla: 'restaurantes', dir: 1 });
+          }}
+          onCancel={() => setPedirBorrar(false)}
+        />
       </div>
     );
   }
