@@ -28,6 +28,7 @@ export default function App() {
   const [intento, setIntento] = useState(0);
   const [tab, setTab] = useState<Tab>('gente');
   const [activePersona, setActivePersona] = useState<string | null>(null);
+  const [ultimas, setUltimas] = useState<string[]>([]); // última selección del diálogo de la carta
 
   useEffect(() => {
     let vivo = true;
@@ -47,6 +48,7 @@ export default function App() {
     setSaved(null);
     setTab('gente');
     setActivePersona(null);
+    setUltimas([]);
   };
 
   if (!dinner) {
@@ -90,8 +92,11 @@ export default function App() {
           <ul className="list">
             {restaurantes.map(r => (
               <li key={r.id}>
-                <button type="button" className="wide" onClick={() => start(r.id)}>
-                  {r.nombre}
+                <button type="button" className="wide row pick" onClick={() => start(r.id)}>
+                  <span className="grow">{r.nombre}</span>
+                  <span className="chevron" aria-hidden="true">
+                    ›
+                  </span>
                 </button>
               </li>
             ))}
@@ -124,13 +129,8 @@ export default function App() {
   return (
     <>
       <header className="header">
-        <div className="grow">
-          <strong>{menu.nombre}</strong>
-          <div>Total {formatEuros(payStatus(dinner).total)}</div>
-        </div>
-        <button type="button" onClick={() => confirm('¿Borrar esta cena y empezar otra?') && nueva()}>
-          Nueva cena
-        </button>
+        <strong className="grow">{menu.nombre}</strong>
+        <span className="header-total">{formatEuros(payStatus(dinner).total)}</span>
       </header>
 
       {error && (
@@ -148,6 +148,7 @@ export default function App() {
               setActivePersona(id);
               setTab('carta');
             }}
+            onReset={nueva}
           />
         )}
         {tab === 'carta' && (
@@ -160,6 +161,8 @@ export default function App() {
             activePersona={activePersona}
             onClearPersona={() => setActivePersona(null)}
             onGoPeople={() => setTab('gente')}
+            ultimas={ultimas}
+            setUltimas={setUltimas}
           />
         )}
         {tab === 'resumen' && (

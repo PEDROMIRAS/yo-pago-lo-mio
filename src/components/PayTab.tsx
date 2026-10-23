@@ -16,7 +16,14 @@ export function PayTab({ dinner, act }: { dinner: Dinner; act: Act }) {
   const [malos, setMalos] = useState<Set<string>>(new Set());
 
   const cuotas = shares(dinner);
-  const { total, diferencia } = payStatus(dinner);
+  const { total, pagado, diferencia } = payStatus(dinner);
+
+  // el caso más común: uno paga la cuenta entera y los demás no ponen nada
+  const pagoTodo = (id: string) => {
+    setTextos(Object.fromEntries(dinner.personas.map(p => [p.id, p.id === id ? aTexto(total) : ''])));
+    setMalos(new Set());
+    act(d => d.personas.reduce((acc, p) => setPago(acc, p.id, p.id === id ? total : 0), d));
+  };
   const nombre = (id: string) => dinner.personas.find(p => p.id === id)?.nombre ?? '?';
 
   const guardar = (id: string) => {
@@ -45,6 +52,11 @@ export function PayTab({ dinner, act }: { dinner: Dinner; act: Act }) {
                 <div className="grow">
                   <strong>{p.nombre}</strong>
                   <div className="muted">le toca {formatEuros(cuotas[p.id] ?? 0)}</div>
+                  {total > 0 && dinner.pagos[p.id] !== total && (
+                    <button type="button" className="small" onClick={() => pagoTodo(p.id)}>
+                      Pagó todo
+                    </button>
+                  )}
                 </div>
                 <label className="paid">
                   <span className="muted">ha puesto</span>
@@ -71,8 +83,11 @@ export function PayTab({ dinner, act }: { dinner: Dinner; act: Act }) {
       </ul>
 
       <div className="status" aria-live="polite">
-        {diferencia < 0 && <p className="error">Faltan {formatEuros(-diferencia)}</p>}
-        {diferencia > 0 && <p className="error">Sobran {formatEuros(diferencia)}</p>}
+        {pagado === 0 && total > 0 && (
+          <p className="muted">Total {formatEuros(total)}. Apuntad lo que ha puesto cada uno.</p>
+        )}
+        {pagado > 0 && diferencia < 0 && <p className="warn">Faltan {formatEuros(-diferencia)}</p>}
+        {diferencia > 0 && <p className="warn">Sobran {formatEuros(diferencia)}</p>}
         {diferencia === 0 && total > 0 && (
           transferencias.length === 0 ? (
             <p>Cuentas cuadradas, nadie debe nada</p>

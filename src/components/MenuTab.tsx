@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Dinner, Menu, MenuItem } from '../types';
 import type { Act } from '../useDinner';
-import { matchesQuery } from '../lib/menu';
 import { addLine } from '../lib/dinner';
+import { itemTotals } from '../lib/calc';
 import { formatEuros } from '../lib/money';
 import { LineDialog } from './LineDialog';
+import { MenuList } from './MenuList';
 
 export function MenuTab(props: {
   dinner: Dinner;
@@ -15,10 +16,18 @@ export function MenuTab(props: {
   activePersona: string | null;
   onClearPersona: () => void;
   onGoPeople: () => void;
+  ultimas: string[];
+  setUltimas: (ids: string[]) => void;
 }) {
-  const { dinner, menu, act, error, clearError, activePersona, onClearPersona, onGoPeople } = props;
-  const [query, setQuery] = useState('');
+  const { dinner, menu, act, error, clearError, activePersona, onClearPersona, onGoPeople, ultimas, setUltimas } = props;
   const [item, setItem] = useState<MenuItem | null>(null);
+  const [hecho, setHecho] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hecho) return;
+    const t = setTimeout(() => setHecho(null), 2500);
+    return () => clearTimeout(t);
+  }, [hecho]);
 
   if (dinner.personas.length === 0) {
     return (
@@ -32,22 +41,12 @@ export function MenuTab(props: {
   }
 
   const activa = dinner.personas.find(p => p.id === activePersona);
-  const grupos = new Map<string, MenuItem[]>();
-  for (const it of menu.carta) {
-    if (matchesQuery(it, query)) grupos.set(it.categoria, [...(grupos.get(it.categoria) ?? []), it]);
-  }
+  const existentes = new Set(dinner.personas.map(p => p.id));
+  const pedidos = new Map(itemTotals(dinner).map(i => [i.producto, i.cantidad]));
+  const nombres = (ids: string[]) => dinner.personas.filter(p => ids.includes(p.id)).map(p => p.nombre).join(', ');
 
   return (
     <section>
-      <input
-        type="search"
-        className="search"
-        aria-label="Buscar en la carta"
-        placeholder="Buscar en la carta"
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-      />
-
       {activa && (
         <div className="row banner">
           <span className="grow">
@@ -59,40 +58,35 @@ export function MenuTab(props: {
         </div>
       )}
 
-      {grupos.size === 0 && <p className="muted">No hay nada con “{query}”.</p>}
-      {[...grupos].map(([categoria, items]) => (
-        <div key={categoria}>
-          <h2 className="cat">{categoria}</h2>
-          <ul className="list">
-            {items.map(it => (
-              <li key={it.nombre}>
-                <button type="button" className="wide row" onClick={() => {
-                    clearError();
-                    setItem(it);
-                  }}
-                >
-                  <span className="grow">{it.nombre}</span>
-                  <span>{formatEuros(it.precio)}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      <MenuList
+        menu={menu}
+        pedidos={pedidos}
+        onPick={it => {
+          clearError();
+          setItem(it);
+        }}
+      />
 
       <LineDialog
         open={item !== null}
         titulo={item ? `${item.nombre} · ${formatEuros(item.precio)}` : ''}
         personas={dinner.personas}
-        inicial={{ cantidad: 1, personas: activa ? [activa.id] : [] }}
+        // lo normal es pedir varias cosas seguidas para el mismo grupo
+        inicial={{ cantidad: 1, personas: activa ? [activa.id] : ultimas.filter(id => existentes.has(id)) }}
         error={error}
         onAccept={({ cantidad, personas }) => {
           if (item && act(d => addLine(d, { producto: item.nombre, precio: item.precio, cantidad, personas }))) {
+            if (!activa) setUltimas(personas);
+            setHecho(`Añadido: ${cantidad} × ${item.nombre} · ${nombres(personas)}`);
             setItem(null);
           }
         }}
         onClose={() => setItem(null)}
       />
+
+      <p className={hecho ? 'snackbar show' : 'snackbar'} role="status">
+        {hecho}
+      </p>
     </section>
   );
 }

@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import type { Persona } from '../types';
+import { Modal } from './Modal';
 
 type Valor = { cantidad: number; personas: string[] };
 type Props = {
@@ -13,19 +14,11 @@ type Props = {
 };
 
 export function LineDialog({ open, ...rest }: Props) {
-  const ref = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const dlg = ref.current;
-    if (open && !dlg?.open) dlg?.showModal();
-    if (!open && dlg?.open) dlg.close();
-  }, [open]);
-
   return (
-    <dialog ref={ref} onClose={rest.onClose} aria-labelledby="line-title">
+    <Modal open={open} onClose={rest.onClose} label={rest.titulo}>
       {/* montado solo al abrir: el formulario arranca siempre desde `inicial` */}
-      {open && <LineForm {...rest} />}
-    </dialog>
+      <LineForm {...rest} />
+    </Modal>
   );
 }
 
@@ -45,7 +38,7 @@ function LineForm({ titulo, personas, inicial, error, onAccept, onClose }: Omit<
         onAccept({ cantidad, personas: marcadas });
       }}
     >
-      <h2 id="line-title">{titulo}</h2>
+      <h2>{titulo}</h2>
 
       <div className="row stepper">
         <button type="button" aria-label="Menos" onClick={() => setCantidad(c => Math.max(1, c - 1))}>

@@ -5,9 +5,15 @@ import { addLine, addPersonToLines, removeLine, setModo, updateLine } from '../l
 import { blocks, breakdown, itemTotals, payStatus, shares } from '../lib/calc';
 import { formatEuros } from '../lib/money';
 import { LineDialog } from './LineDialog';
+import { MenuList } from './MenuList';
+import { Modal } from './Modal';
 import { ModeToggle } from './ModeToggle';
 
-type Edicion = { tipo: 'editar'; linea: Linea } | { tipo: 'nueva'; item: MenuItem; personas: string[] } | null;
+type Edicion =
+  | { tipo: 'editar'; linea: Linea }
+  | { tipo: 'elegir'; personas: string[] }
+  | { tipo: 'nueva'; item: MenuItem; personas: string[] }
+  | null;
 
 export function SummaryTab(props: {
   dinner: Dinner;
@@ -25,6 +31,7 @@ export function SummaryTab(props: {
   const { total } = payStatus(dinner);
   const cuotas = shares(dinner);
   const desglose = breakdown(dinner);
+  const totales = itemTotals(dinner);
   const abrir = (e: Edicion) => {
     clearError();
     setEdicion(e);
@@ -32,16 +39,41 @@ export function SummaryTab(props: {
 
   return (
     <section>
-      <h2>Lo pedido</h2>
-      <ul className="plain">
-        {itemTotals(dinner).map(it => (
-          <li key={it.producto}>
-            {it.producto} ×{it.cantidad} · {formatEuros(it.total)}
+      <h2>Por persona</h2>
+      <ModeToggle modo={dinner.modo} onChange={m => act(d => setModo(d, m))} />
+      {dinner.modo === 'igual' && (
+        <p className="muted">
+          Total {formatEuros(total)} entre {dinner.personas.length} personas
+        </p>
+      )}
+      <ul className="list">
+        {dinner.personas.map(p => (
+          <li key={p.id}>
+            <div className="row">
+              <strong className="grow">{p.nombre}</strong>
+              <strong>{formatEuros(cuotas[p.id] ?? 0)}</strong>
+            </div>
+            {dinner.modo === 'consumo' &&
+              (desglose[p.id]?.length ? (
+                <ul className="sub muted">
+                  {desglose[p.id].map(({ linea, parte }) => (
+                    <li key={linea.id} className="row">
+                      <span className="grow">
+                        {linea.cantidad} × {linea.producto}
+                        {linea.personas.length > 1 && ` (entre ${linea.personas.length})`}
+                      </span>
+                      <span>{formatEuros(parte)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="muted sub">No ha pedido nada</p>
+              ))}
           </li>
         ))}
       </ul>
 
-      <h2>Bloques</h2>
+      <h2>Compartido entre…</h2>
       {blocks(dinner).map(b => {
         const partes = Object.values(b.cuotas);
         const min = Math.min(...partes);
@@ -49,11 +81,15 @@ export function SummaryTab(props: {
         const fuera = dinner.personas.filter(p => !b.personas.includes(p.id));
         return (
           <article key={b.personas.join()} className="card">
-            <h3>
-              {b.personas.map(nombre).join(' + ')} · {formatEuros(b.total)}
-              {b.personas.length > 1 &&
-                ` · ${min === max ? formatEuros(min) : `${formatEuros(min).replace(/\s*€/, '')}–${formatEuros(max)}`} cada uno`}
-            </h3>
+            <div className="row">
+              <h3 className="grow">{b.personas.map(nombre).join(' + ')}</h3>
+              <strong>{formatEuros(b.total)}</strong>
+            </div>
+            {b.personas.length > 1 && (
+              <p className="muted sub">
+                {min === max ? formatEuros(min) : `${formatEuros(min).replace(/\s*€/, '')}–${formatEuros(max)}`} cada uno
+              </p>
+            )}
             <ul className="list">
               {b.lineas.map(l => (
                 <li key={l.id} className="row">
@@ -77,7 +113,7 @@ export function SummaryTab(props: {
             <div className="row add">
               {fuera.length > 0 && (
                 <select
-                  aria-label="Añadir persona al bloque"
+                  aria-label="Añadir persona a lo compartido"
                   value=""
                   onChange={e => act(d => addPersonToLines(d, b.lineas.map(l => l.id), e.target.value))}
                 >
@@ -89,77 +125,66 @@ export function SummaryTab(props: {
                   ))}
                 </select>
               )}
-              <select
-                aria-label="Añadir producto al bloque"
-                value=""
-                onChange={e => {
-                  const item = menu.carta[Number(e.target.value)];
-                  if (item) abrir({ tipo: 'nueva', item, personas: b.personas });
-                }}
-              >
-                <option value="">+ Producto</option>
-                {menu.carta.map((it, i) => (
-                  <option key={i} value={i}>
-                    {it.nombre} · {formatEuros(it.precio)}
-                  </option>
-                ))}
-              </select>
+              <button type="button" onClick={() => abrir({ tipo: 'elegir', personas: b.personas })}>
+                + Producto
+              </button>
             </div>
           </article>
         );
       })}
 
-      <h2>Por persona</h2>
-      <ModeToggle modo={dinner.modo} onChange={m => act(d => setModo(d, m))} />
-      {dinner.modo === 'igual' && (
-        <p className="muted">
-          Total {formatEuros(total)} entre {dinner.personas.length} personas
-        </p>
-      )}
+      <h2>Lo pedido</h2>
       <ul className="list">
-        {dinner.personas.map(p => (
-          <li key={p.id}>
-            <div className="row">
-              <strong className="grow">{p.nombre}</strong>
-              <strong>{formatEuros(cuotas[p.id] ?? 0)}</strong>
-            </div>
-            {dinner.modo === 'consumo' &&
-              (desglose[p.id]?.length ? (
-                <ul className="plain muted">
-                  {desglose[p.id].map(({ linea, parte }) => (
-                    <li key={linea.id}>
-                      {linea.cantidad} × {linea.producto}
-                      {linea.personas.length > 1 && ` (entre ${linea.personas.length})`} · {formatEuros(parte)}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted">No ha pedido nada</p>
-              ))}
+        {totales.map(it => (
+          <li key={it.producto} className="row">
+            <span className="grow">
+              {it.cantidad} × {it.producto}
+            </span>
+            <span>{formatEuros(it.total)}</span>
           </li>
         ))}
       </ul>
-      <p className="row">
+      <p className="row total">
         <strong className="grow">Total de la cuenta</strong>
         <strong>{formatEuros(total)}</strong>
       </p>
 
+      <Modal open={edicion?.tipo === 'elegir'} onClose={() => setEdicion(null)} label="Elegir producto">
+        <div className="row">
+          <h2 className="grow">Elegir producto</h2>
+          <button type="button" className="icon" aria-label="Cerrar" onClick={() => setEdicion(null)}>
+            ✕
+          </button>
+        </div>
+        <MenuList
+          menu={menu}
+          pedidos={new Map(totales.map(i => [i.producto, i.cantidad]))}
+          onPick={item => edicion?.tipo === 'elegir' && setEdicion({ tipo: 'nueva', item, personas: edicion.personas })}
+        />
+      </Modal>
+
       <LineDialog
-        open={edicion !== null}
-        titulo={edicion?.tipo === 'editar' ? edicion.linea.producto : (edicion?.item.nombre ?? '')}
+        open={edicion?.tipo === 'editar' || edicion?.tipo === 'nueva'}
+        titulo={
+          edicion?.tipo === 'editar'
+            ? edicion.linea.producto
+            : edicion?.tipo === 'nueva'
+              ? `${edicion.item.nombre} · ${formatEuros(edicion.item.precio)}`
+              : ''
+        }
         personas={dinner.personas}
         inicial={
           edicion?.tipo === 'editar'
             ? { cantidad: edicion.linea.cantidad, personas: edicion.linea.personas }
-            : { cantidad: 1, personas: edicion?.personas ?? [] }
+            : { cantidad: 1, personas: edicion?.tipo === 'nueva' ? edicion.personas : [] }
         }
         error={error}
         onAccept={v => {
-          if (!edicion) return;
           const ok =
-            edicion.tipo === 'editar'
+            edicion?.tipo === 'editar'
               ? act(d => updateLine(d, edicion.linea.id, v))
-              : act(d => addLine(d, { producto: edicion.item.nombre, precio: edicion.item.precio, ...v }));
+              : edicion?.tipo === 'nueva' &&
+                act(d => addLine(d, { producto: edicion.item.nombre, precio: edicion.item.precio, ...v }));
           if (ok) setEdicion(null);
         }}
         onClose={() => setEdicion(null)}
