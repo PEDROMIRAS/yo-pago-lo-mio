@@ -584,20 +584,20 @@ git commit -m "feat: arranque con recuperación de cena y pestaña Gente"
   - `LineDialog(props: { open: boolean; titulo: string; personas: Persona[]; inicial: { cantidad: number; personas: string[] }; onAccept: (v: { cantidad: number; personas: string[] }) => void; onClose: () => void })` — usa `<dialog>` nativo (`showModal()` en un efecto). Stepper − / número / + (mínimo 1), una casilla por persona, botón **Todos** que marca/desmarca todo, **Aceptar** y **Cancelar**. No valida: los errores llegan de `dinner.ts` vía `act`. Quien lo usa cierra el diálogo solo si `act` devuelve `true` (`onAccept={v => { if (act(d => addLine(d, …))) cerrar(); }}`); no se puede mirar `error` justo después, porque aún vale lo de antes del render. Lo reutilizan Task 6 y Task 7.
   - `MenuTab({ dinner, menu, act, activePersona, onClearPersona })`
 
-- [ ] **Step 1: Implementar `LineDialog`** con las props de arriba.
+- [x] **Step 1: Implementar `LineDialog`** con las props de arriba.
 
-- [ ] **Step 2: Implementar `MenuTab`**
+- [x] **Step 2: Implementar `MenuTab`**
 
 Buscador arriba (filtra con `matchesQuery`); productos agrupados por `categoria` en el orden del JSON, con nombre y precio. Si `activePersona` está puesto, una franja “Añadiendo para **Ana** ✕” (✕ → `onClearPersona`). Tocar un producto abre `LineDialog` con `inicial = { cantidad: 1, personas: activePersona ? [activePersona] : [] }`; **Aceptar** → `act(d => addLine(d, { producto: item.nombre, precio: item.precio, cantidad, personas }))`. Sin personas en la cena, la pestaña muestra “Añade primero a la gente” con un botón que lleva a Gente.
 
-- [ ] **Step 3: Verificar en el navegador**
+- [x] **Step 3: Verificar en el navegador**
 
 - Buscar “ALBONDIGAS” encuentra Albóndigas en salsa, y “postres” muestra los 14 postres.
 - Morcillas → cantidad 3 → marcar Ana y Bea → Aceptar → la cabecera muestra un total de 4,80 €.
 - Aceptar sin marcar a nadie → aviso “Elige al menos una persona” y el diálogo sigue abierto.
 - En Gente, tocar “Ana” → Carta con “Añadiendo para Ana”; Caña → el diálogo sale con solo Ana marcada y cantidad 1.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add -A

@@ -6,6 +6,7 @@ import { browserStorage, loadSession } from './lib/storage';
 import { payStatus } from './lib/calc';
 import { formatEuros } from './lib/money';
 import { PeopleTab } from './components/PeopleTab';
+import { MenuTab } from './components/MenuTab';
 
 type Tab = 'gente' | 'carta' | 'resumen' | 'pagar';
 const TABS: { id: Tab; label: string }[] = [
@@ -24,7 +25,7 @@ export default function App() {
   const [restError, setRestError] = useState(false);
   const [intento, setIntento] = useState(0);
   const [tab, setTab] = useState<Tab>('gente');
-  const [, setActivePersona] = useState<string | null>(null); // la lee MenuTab (Task 6)
+  const [activePersona, setActivePersona] = useState<string | null>(null);
 
   useEffect(() => {
     let vivo = true;
@@ -147,7 +148,19 @@ export default function App() {
             }}
           />
         )}
-        {tab !== 'gente' && <p className="muted">Próximamente.</p>}
+        {tab === 'carta' && (
+          <MenuTab
+            dinner={dinner}
+            menu={menu}
+            act={act}
+            error={error}
+            clearError={clearError}
+            activePersona={activePersona}
+            onClearPersona={() => setActivePersona(null)}
+            onGoPeople={() => setTab('gente')}
+          />
+        )}
+        {(tab === 'resumen' || tab === 'pagar') && <p className="muted">Próximamente.</p>}
       </main>
 
       <nav className="tabs">

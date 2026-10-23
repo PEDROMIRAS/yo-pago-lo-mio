@@ -170,3 +170,81 @@ select {
   font-weight: 600;
   box-shadow: inset 0 3px var(--accent);
 }
+
+.search {
+  width: 100%;
+}
+
+.banner {
+  margin-top: 8px;
+  padding-left: 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.cat {
+  margin: 20px 0 0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+dialog {
+  width: min(420px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.4);
+}
+
+dialog h2 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+}
+
+.stepper {
+  justify-content: center;
+}
+
+.stepper button {
+  min-width: 44px;
+  font-size: 1.3rem;
+}
+
+.stepper output {
+  min-width: 3ch;
+  text-align: center;
+  font-size: 1.3rem;
+}
+
+fieldset {
+  margin: 12px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+
+.check input {
+  width: 22px;
+  min-height: 22px;
+}
+
+.actions {
+  justify-content: flex-end;
+}

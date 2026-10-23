@@ -23,6 +23,7 @@ export function useDinner() {
     try {
       const next = fn(ref.current);
       setDinner(next);
+      setError(null);
       saveSession(browserStorage, next);
       return true;
     } catch (e) {
