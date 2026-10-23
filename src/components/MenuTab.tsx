@@ -36,7 +36,7 @@ export function MenuTab(props: {
       <EmptyState
         icon="users"
         titulo="Primero, la gente"
-        texto="Para repartir cada plato necesito saber quién está en la mesa."
+        texto="Para repartir cada plato hace falta saber quién está en la mesa."
         accion={{ label: 'Ir a Gente', onClick: onGoPeople }}
       />
     );

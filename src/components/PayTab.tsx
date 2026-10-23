@@ -22,7 +22,7 @@ export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; on
       <EmptyState
         icon="wallet"
         titulo="No hay nada que pagar todavía"
-        texto="Apuntad lo que pedís en la carta y aquí saldrá quién paga a quién."
+        texto="Apunta en la carta lo que se pide y aquí saldrá quién paga a quién."
         accion={{ label: 'Ir a la carta', onClick: onGoMenu }}
       />
     );
@@ -97,7 +97,7 @@ export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; on
 
       <div className="status" aria-live="polite">
         {pagado === 0 && total > 0 && (
-          <p className="muted">Total {formatEuros(total)}. Apuntad lo que ha puesto cada uno.</p>
+          <p className="muted">Total {formatEuros(total)}. Apunta lo que ha puesto cada uno.</p>
         )}
         {pagado > 0 && diferencia < 0 && <p className="warn">Faltan {formatEuros(-diferencia)}</p>}
         {diferencia > 0 && <p className="warn">Sobran {formatEuros(diferencia)}</p>}

@@ -5,19 +5,23 @@
   font-display: swap;
 }
 
+/* Terracota sobre pizarra: neutros fríos, un único acento óxido. Contrastes medidos (WCAG). */
 :root {
-  --bg: #fbf8f4;
-  --surface: #ffffff;
-  --fg: #1f1a16;
-  --muted: #6f655c;
-  --line: #e7e0d8; /* separadores */
-  --control: #9c8b74; /* bordes de controles: 3:1 sobre el fondo */
-  --accent: #af491d;
-  --accent-soft: #f6e6dc;
-  --accent-fg: #ffffff;
-  --error: #b91c1c;
+  --bg: #f5f6f8;
+  --surface: #fcfcfd;
+  --fg: #15181c; /* 16,5:1 */
+  --muted: #5b626d; /* 5,7:1 */
+  --line: #e1e4e8; /* separadores */
+  --control: #838a94; /* bordes de controles: 3,2:1 */
+  --accent: #b04a1f; /* 5,1:1 como texto */
+  --accent-soft: #f7e7df;
+  --accent-fg: #fdf8f5; /* 5,2:1 sobre el acento */
+  --error: #b42318;
   --warn: #9a3412;
-  --shadow: 0 12px 32px -12px rgb(74 45 25 / 0.18);
+  --shadow: 0 12px 32px -12px rgb(21 24 28 / 0.18);
+  /* radios: controles 12, contenedores 16, pastillas solo en chips, contadores y el stepper */
+  --r-control: 12px;
+  --r-box: 16px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --tabs-h: 64px;
   color-scheme: light dark;
@@ -25,15 +29,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #171310;
-    --surface: #211b17;
-    --fg: #f2ece6;
-    --muted: #a69a8f;
-    --line: #342b25;
-    --control: #76675a;
-    --accent: #ea9253;
-    --accent-soft: #3a2619;
-    --accent-fg: #1a120c;
+    --bg: #111317;
+    --surface: #191c21;
+    --fg: #eceef1;
+    --muted: #9ba2ad;
+    --line: #2a2e35;
+    --control: #6b727d;
+    --accent: #e5875b;
+    --accent-soft: #3a2218;
+    --accent-fg: #17110d;
     --error: #f87171;
     --warn: #fdba74;
     --shadow: 0 12px 32px -12px rgb(0 0 0 / 0.6);
@@ -103,7 +107,7 @@ button {
   gap: 6px;
   padding: 0 14px;
   border: 1px solid var(--control);
-  border-radius: 12px;
+  border-radius: var(--r-control);
   background: transparent;
   cursor: pointer;
   transition:
@@ -172,7 +176,7 @@ select {
   min-width: 0;
   padding: 0 12px;
   border: 1px solid var(--control);
-  border-radius: 12px;
+  border-radius: var(--r-control);
   background: var(--surface);
 }
 
@@ -379,7 +383,7 @@ button.item {
 .banner {
   margin-bottom: 12px;
   padding-left: 14px;
-  border-radius: 12px;
+  border-radius: var(--r-box);
   background: var(--accent-soft);
 }
 
@@ -389,7 +393,7 @@ button.item {
   margin-bottom: 12px;
   padding: 14px 16px 12px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: var(--r-box);
   background: var(--surface);
 }
 
@@ -425,13 +429,13 @@ button.item {
   padding: 4px;
   gap: 4px;
   border: 1px solid var(--control);
-  border-radius: 14px;
+  border-radius: var(--r-box);
 }
 
 .segmented button {
   min-height: 40px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-control) /* radio exterior menos el padding */;
 }
 
 .segmented button[aria-pressed='true'] {
@@ -498,7 +502,7 @@ input[aria-invalid='true'] {
   place-items: center;
   width: 56px;
   height: 56px;
-  border-radius: 16px;
+  border-radius: var(--r-box);
   background: var(--accent-soft);
   color: var(--accent);
 }
@@ -509,7 +513,7 @@ input[aria-invalid='true'] {
 }
 
 .skeleton > div {
-  border-radius: 12px;
+  border-radius: var(--r-control);
   background: linear-gradient(90deg, var(--line) 0%, var(--surface) 50%, var(--line) 100%);
   background-size: 200% 100%;
   animation: shimmer 1.4s linear infinite;
@@ -537,7 +541,7 @@ input[aria-invalid='true'] {
   display: flex;
   align-items: center;
   gap: 8px;
-  border-radius: 14px;
+  border-radius: var(--r-box);
   background: var(--fg);
   color: var(--bg);
   box-shadow: var(--shadow);
@@ -589,7 +593,7 @@ dialog {
   max-height: calc(100% - 32px);
   padding: 18px;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: var(--r-box);
   background: var(--surface);
   color: var(--fg);
   box-shadow: var(--shadow);
@@ -630,7 +634,7 @@ fieldset {
   margin: 14px 0;
   padding: 8px 12px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--r-box);
   display: grid;
   gap: 2px;
 }
@@ -686,4 +690,10 @@ legend {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* el gris por defecto del navegador no llega a 4,5:1 */
+::placeholder {
+  color: var(--muted);
+  opacity: 1;
 }

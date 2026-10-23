@@ -33,7 +33,7 @@ export function SummaryTab(props: {
       <EmptyState
         icon="receipt"
         titulo="Aún no habéis pedido nada"
-        texto="Cuando apuntéis platos en la carta, aquí veréis lo que le toca a cada uno."
+        texto="Cuando apuntes platos en la carta, aquí verás lo que le toca a cada uno."
         accion={{ label: 'Ir a la carta', onClick: onGoMenu }}
       />
     );
@@ -99,7 +99,7 @@ export function SummaryTab(props: {
             </div>
             {b.personas.length > 1 && (
               <p className="muted sub">
-                {min === max ? formatEuros(min) : `${formatEuros(min).replace(/\s*€/, '')}–${formatEuros(max)}`} cada uno
+                {min === max ? formatEuros(min) : `${formatEuros(min).replace(/\s*€/, '')}-${formatEuros(max)}`} cada uno
               </p>
             )}
             <ul className="rows">

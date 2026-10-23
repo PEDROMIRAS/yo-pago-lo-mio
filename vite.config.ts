@@ -17,8 +17,8 @@ export default defineConfig({
         description: 'Reparte la cuenta de la cena: quién ha pedido qué y quién paga a quién.',
         lang: 'es',
         display: 'standalone',
-        theme_color: '#af491d',
-        background_color: '#fbf8f4',
+        theme_color: '#b04a1f',
+        background_color: '#f5f6f8',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
