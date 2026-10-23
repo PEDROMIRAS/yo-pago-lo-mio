@@ -3,7 +3,7 @@ import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
 import { CheckCircle, Users, X } from '@phosphor-icons/react';
 import type { Dinner, Menu, MenuItem } from '../types';
-import type { Act } from '../useDinner';
+import type { Act, Deshacer } from '../useDinner';
 import { addLine, nombreDe } from '../lib/dinner';
 import { itemTotals } from '../lib/calc';
 import { formatEuros } from '../lib/money';
@@ -12,6 +12,7 @@ import { LineDialog } from './LineDialog';
 import { MenuList } from './MenuList';
 import { EmptyState } from './EmptyState';
 import { Snackbar } from './Snackbar';
+import { PlatoPedidos } from './PlatoPedidos';
 
 export function MenuTab(props: {
   dinner: Dinner;
@@ -22,10 +23,10 @@ export function MenuTab(props: {
   activePersona: string | null;
   onClearPersona: () => void;
   onGoPeople: () => void;
-  ultimas: string[];
-  setUltimas: (ids: string[]) => void;
+  deshacer: Deshacer | null;
+  undo: () => void;
 }) {
-  const { dinner, menu, act, error, clearError, activePersona, onClearPersona, onGoPeople, ultimas, setUltimas } = props;
+  const { dinner, menu, act, error, clearError, activePersona, onClearPersona, onGoPeople, deshacer, undo } = props;
   const [item, setItem] = useState<MenuItem | null>(null);
   // n: cada aviso es nuevo aunque el texto se repita, para que vuelva a entrar
   const [hecho, setHecho] = useState<{ n: number; texto: string } | null>(null);
@@ -48,7 +49,6 @@ export function MenuTab(props: {
   }
 
   const activa = dinner.personas.find(p => p.id === activePersona);
-  const existentes = new Set(dinner.personas.map(p => p.id));
   const pedidos = new Map(itemTotals(dinner).map(i => [i.producto, i.cantidad]));
 
 
@@ -87,18 +87,19 @@ export function MenuTab(props: {
         open={item !== null}
         titulo={item ? `${item.nombre} · ${formatEuros(item.precio)}` : ''}
         personas={dinner.personas}
-        // lo normal es pedir varias cosas seguidas para el mismo grupo
-        inicial={{ cantidad: 1, personas: activa ? [activa.id] : ultimas.filter(id => existentes.has(id)) }}
+        // sin nadie marcado: cada pedido es de un grupo distinto (salvo si se entra desde una persona)
+        inicial={{ cantidad: 1, personas: activa ? [activa.id] : [] }}
         error={error}
         onAccept={({ cantidad, personas }) => {
           if (item && act(d => addLine(d, { producto: item.nombre, precio: item.precio, cantidad, personas }))) {
-            if (!activa) setUltimas(personas);
             setHecho(h => ({ n: (h?.n ?? 0) + 1, texto: `Añadido: ${cantidad} × ${item.nombre} · ${personas.map(id => nombreDe(dinner, id)).join(', ')}` }));
             setItem(null);
           }
         }}
         onClose={() => setItem(null)}
-      />
+      >
+        {item && <PlatoPedidos dinner={dinner} producto={item.nombre} act={act} deshacer={deshacer} undo={undo} />}
+      </LineDialog>
 
       <Snackbar id={hecho?.n ?? null}>
         <CheckCircle size={20} weight="fill" className="shrink-0" />

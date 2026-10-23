@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
 import { Minus, Plus } from '@phosphor-icons/react';
@@ -14,18 +14,20 @@ type Props = {
   error?: string | null; // el aviso general queda tapado por el modal
   onAccept: (v: Valor) => void;
   onClose: () => void;
+  children?: ReactNode; // debajo del formulario, en la misma hoja
 };
 
-export function LineDialog({ open, ...rest }: Props) {
+export function LineDialog({ open, children, ...rest }: Props) {
   return (
     <Modal open={open} onClose={rest.onClose} label={rest.titulo}>
       {/* montado solo al abrir: el formulario arranca siempre desde `inicial` */}
       <LineForm {...rest} />
+      {children}
     </Modal>
   );
 }
 
-function LineForm({ titulo, personas, inicial, error, onAccept, onClose }: Omit<Props, 'open'>) {
+function LineForm({ titulo, personas, inicial, error, onAccept, onClose }: Omit<Props, 'open' | 'children'>) {
   const [cantidad, setCantidad] = useState(inicial.cantidad);
   const [sube, setSube] = useState(true);
   const [marcadas, setMarcadas] = useState(inicial.personas);

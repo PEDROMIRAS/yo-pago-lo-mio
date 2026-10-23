@@ -23,7 +23,6 @@ export default function App() {
   // dir: +1 hacia la derecha de la barra, -1 hacia la izquierda; decide de qué lado entra la pestaña
   const [{ tab, dir }, setNav] = useState<{ tab: Tab; dir: number }>({ tab: 'gente', dir: 1 });
   const [activePersona, setActivePersona] = useState<string | null>(null);
-  const [ultimas, setUltimas] = useState<string[]>([]); // última selección del diálogo de la carta
 
   const irA = (t: Tab) => {
     if (t === tab) return;
@@ -36,7 +35,6 @@ export default function App() {
     setSaved(null);
     setNav({ tab: 'gente', dir: 1 });
     setActivePersona(null);
-    setUltimas([]);
   };
 
   if (!dinner) {
@@ -130,8 +128,8 @@ export default function App() {
                 activePersona={activePersona}
                 onClearPersona={() => setActivePersona(null)}
                 onGoPeople={() => irA('gente')}
-                ultimas={ultimas}
-                setUltimas={setUltimas}
+                deshacer={deshacer}
+                undo={undo}
               />
             )}
             {tab === 'resumen' && (
