@@ -2,14 +2,17 @@ import { useState, type ReactNode } from 'react';
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
 import { Minus, Plus } from '@phosphor-icons/react';
-import type { Persona } from '../types';
+import type { MenuItem, Persona } from '../types';
+import { formatEuros } from '../lib/money';
 import { Modal } from './Modal';
 
-type Valor = { cantidad: number; personas: string[] };
+type Valor = { cantidad: number; personas: string[]; otraMitad?: string };
 type Props = {
   open: boolean;
   titulo: string;
   descripcion?: string; // ingredientes del plato, bajo el título
+  // si el plato admite mitad y mitad: su precio y las otras pizzas con las que se puede combinar
+  mitades?: { precio: number; opciones: MenuItem[] };
   personas: Persona[];
   inicial: Valor;
   error?: string | null; // el aviso general queda tapado por el modal
@@ -28,10 +31,13 @@ export function LineDialog({ open, children, ...rest }: Props) {
   );
 }
 
-function LineForm({ titulo, descripcion, personas, inicial, error, onAccept, onClose }: Omit<Props, 'open' | 'children'>) {
+function LineForm(props: Omit<Props, 'open' | 'children'>) {
+  const { titulo, descripcion, mitades, personas, inicial, error, onAccept, onClose } = props;
   const [cantidad, setCantidad] = useState(inicial.cantidad);
   const [sube, setSube] = useState(true);
   const [marcadas, setMarcadas] = useState(inicial.personas);
+  const [otraMitad, setOtraMitad] = useState('');
+  const otra = mitades?.opciones.find(o => o.nombre === otraMitad);
 
   const todas = marcadas.length === personas.length;
   // mantener el orden de la mesa, no el orden en que se marcaron
@@ -47,11 +53,32 @@ function LineForm({ titulo, descripcion, personas, inicial, error, onAccept, onC
       className="pb-1"
       onSubmit={e => {
         e.preventDefault();
-        onAccept({ cantidad, personas: marcadas });
+        onAccept({ cantidad, personas: marcadas, ...(otraMitad ? { otraMitad } : {}) });
       }}
     >
       <h2 className={`text-lg font-semibold ${descripcion ? '' : 'mb-3'}`}>{titulo}</h2>
       {descripcion && <p className="mt-0.5 mb-3 text-small text-muted">{descripcion}</p>}
+
+      {mitades && (
+        <div className="mb-4 grid gap-1.5">
+          <label htmlFor="otra-mitad" className="font-semibold">
+            ¿Mitad y mitad?
+          </label>
+          <select id="otra-mitad" value={otraMitad} onChange={e => setOtraMitad(e.target.value)}>
+            <option value="">No, pizza entera</option>
+            {mitades.opciones.map(o => (
+              <option key={o.nombre} value={o.nombre}>
+                Otra mitad: {o.nombre} · {formatEuros(o.precio)}
+              </option>
+            ))}
+          </select>
+          {otra && (
+            <p className="text-small text-muted">
+              Se cobra la más cara: {formatEuros(Math.max(mitades.precio, otra.precio))} por pizza.
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center justify-center gap-4">
         <button type="button" className="btn size-12 rounded-full px-0" aria-label="Menos" onClick={() => cambiar(-1)}>

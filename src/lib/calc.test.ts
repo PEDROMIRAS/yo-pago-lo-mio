@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { createDinner, addPerson, addLine, setPago, setModo } from './dinner';
-import { shares, breakdown, itemTotals, blocks, payStatus, balances, settle, textoCuentas } from './calc';
+import { shares, breakdown, itemTotals, blocks, payStatus, balances, settle, textoCuentas, pedidosPorPlato } from './calc';
 
 // Ana p1, Bea p2, Carlos p3, Dani p4
 const cena = () => {
@@ -107,4 +107,14 @@ test('textoCuentas sin nada que pagar entre ellos', () => {
   d = addLine(d, { producto: 'Caña', precio: 200, cantidad: 1, personas: ['p1'] });
   d = setPago(d, 'p1', 200);
   expect(textoCuentas(d, 'X').split('\n')[1]).toBe('Cuentas cuadradas, nadie debe nada');
+});
+
+test('pedidosPorPlato cuenta cada mitad para las dos pizzas', () => {
+  let d = addPerson(createDinner('x'), 'Ana');
+  d = addLine(d, { producto: 'Atún', precio: 1250, cantidad: 2, personas: ['p1'] });
+  d = addLine(d, { producto: '½ Atún + ½ Hawaiana', precio: 1250, cantidad: 1, personas: ['p1'], mitades: ['Atún', 'Hawaiana'] });
+  const p = pedidosPorPlato(d);
+  expect(p.get('Atún')).toBe(3);
+  expect(p.get('Hawaiana')).toBe(1);
+  expect(p.has('½ Atún + ½ Hawaiana')).toBe(false);
 });

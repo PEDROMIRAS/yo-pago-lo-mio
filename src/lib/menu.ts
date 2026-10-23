@@ -14,12 +14,15 @@ export function normalizeMenu(json: unknown): Menu {
     if (!isRecord(raw) || typeof raw.nombre !== 'string' || raw.nombre.trim() === '') {
       throw new Error(`El producto ${i + 1} de la carta no tiene nombre`);
     }
-    const { nombre, precio, categoria, descripcion } = raw;
+    const { nombre, precio, categoria, descripcion, mitad } = raw;
     if (typeof precio !== 'number' || !Number.isFinite(precio) || precio < 0) {
       throw new Error(`"${nombre}" no tiene un precio válido`);
     }
     if (descripcion !== undefined && typeof descripcion !== 'string') {
       throw new Error(`"${nombre}" tiene una descripción que no es texto`);
+    }
+    if (mitad !== undefined && typeof mitad !== 'boolean') {
+      throw new Error(`"${nombre}": mitad tiene que ser true o false`);
     }
     const texto = descripcion?.trim();
     return {
@@ -27,9 +30,21 @@ export function normalizeMenu(json: unknown): Menu {
       nombre,
       precio: Math.round(precio * 100),
       ...(texto ? { descripcion: texto } : {}),
+      ...(mitad ? { mitad: true } : {}),
     };
   });
   return { nombre, carta };
+}
+
+/**
+ * Pizza mitad y mitad: se cobra la más cara. El nombre va en orden alfabético para que
+ * "Atún + Hawaiana" y "Hawaiana + Atún" sean el mismo producto en el resumen.
+ */
+export function mitadYMitad(a: MenuItem, b: MenuItem): { producto: string; precio: number; mitades: [string, string] } {
+  if (a.nombre === b.nombre) throw new Error('Elige otra pizza para la otra mitad');
+  for (const p of [a, b]) if (!p.mitad) throw new Error(`${p.nombre} no se puede pedir por mitad`);
+  const [x, y] = [a.nombre, b.nombre].sort((m, n) => m.localeCompare(n, 'es'));
+  return { producto: `½ ${x} + ½ ${y}`, precio: Math.max(a.precio, b.precio), mitades: [x, y] };
 }
 
 export function matchesQuery(item: MenuItem, query: string): boolean {
@@ -54,3 +69,15 @@ export async function loadRestaurants(): Promise<RestauranteRef[]> {
 export async function loadMenu(id: string): Promise<Menu> {
   return normalizeMenu(await fetchJson(id));
 }
+
+/** Lo que se apunta al pedir un plato: entero, o mitad y mitad con `otraMitad` (nombre de la carta). */
+export function pedidoDe(menu: Menu, item: MenuItem, otraMitad?: string): { producto: string; precio: number; mitades?: [string, string] } {
+  if (!otraMitad) return { producto: item.nombre, precio: item.precio };
+  const otra = menu.carta.find(p => p.nombre === otraMitad);
+  if (!otra) throw new Error(`${otraMitad} no está en la carta`);
+  return mitadYMitad(item, otra);
+}
+
+/** Pizzas con las que se puede combinar `item` por mitades; vacío si no admite mitad. */
+export const opcionesMitad = (menu: Menu, item: MenuItem) =>
+  item.mitad ? menu.carta.filter(p => p.mitad && p.nombre !== item.nombre) : [];

@@ -5,7 +5,8 @@ import { CheckCircle, Users, X } from '@phosphor-icons/react';
 import type { Dinner, Menu, MenuItem } from '../types';
 import type { Act, Deshacer } from '../useDinner';
 import { addLine, nombreDe } from '../lib/dinner';
-import { itemTotals } from '../lib/calc';
+import { pedidosPorPlato } from '../lib/calc';
+import { opcionesMitad, pedidoDe } from '../lib/menu';
 import { formatEuros } from '../lib/money';
 import { exitFast } from '../motion';
 import { LineDialog } from './LineDialog';
@@ -49,8 +50,11 @@ export function MenuTab(props: {
   }
 
   const activa = dinner.personas.find(p => p.id === activePersona);
-  const pedidos = new Map(itemTotals(dinner).map(i => [i.producto, i.cantidad]));
-
+  const pedidos = pedidosPorPlato(dinner);
+  const mitadesDe = (it: MenuItem) => {
+    const opciones = opcionesMitad(menu, it);
+    return opciones.length ? { precio: it.precio, opciones } : undefined;
+  };
 
   return (
     <section>
@@ -87,13 +91,21 @@ export function MenuTab(props: {
         open={item !== null}
         titulo={item ? `${item.nombre} · ${formatEuros(item.precio)}` : ''}
         descripcion={item?.descripcion}
+        mitades={item ? mitadesDe(item) : undefined}
         personas={dinner.personas}
         // sin nadie marcado: cada pedido es de un grupo distinto (salvo si se entra desde una persona)
         inicial={{ cantidad: 1, personas: activa ? [activa.id] : [] }}
         error={error}
-        onAccept={({ cantidad, personas }) => {
-          if (item && act(d => addLine(d, { producto: item.nombre, precio: item.precio, cantidad, personas }))) {
-            setHecho(h => ({ n: (h?.n ?? 0) + 1, texto: `Añadido: ${cantidad} × ${item.nombre} · ${personas.map(id => nombreDe(dinner, id)).join(', ')}` }));
+        onAccept={({ cantidad, personas, otraMitad }) => {
+          if (!item) return;
+          let producto = item.nombre;
+          const ok = act(d => {
+            const pedido = pedidoDe(menu, item, otraMitad);
+            producto = pedido.producto;
+            return addLine(d, { ...pedido, cantidad, personas });
+          });
+          if (ok) {
+            setHecho(h => ({ n: (h?.n ?? 0) + 1, texto: `Añadido: ${cantidad} × ${producto} · ${personas.map(id => nombreDe(dinner, id)).join(', ')}` }));
             setItem(null);
           }
         }}

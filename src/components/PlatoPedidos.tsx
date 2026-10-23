@@ -10,7 +10,8 @@ import { exitFast, itemExit } from '../motion';
 /** Los pedidos que ya hay de un plato, para verlos y cambiarlos mientras se pide otro. */
 export function PlatoPedidos(props: { dinner: Dinner; producto: string; act: Act; deshacer: Deshacer | null; undo: () => void }) {
   const { dinner, producto, act, deshacer, undo } = props;
-  const lineas = dinner.lineas.filter(l => l.producto === producto);
+  // también las pizzas mitad y mitad que llevan este plato
+  const lineas = dinner.lineas.filter(l => l.producto === producto || l.mitades?.includes(producto));
   if (lineas.length === 0 && !deshacer) return null;
 
   return (
@@ -26,7 +27,10 @@ export function PlatoPedidos(props: { dinner: Dinner; producto: string; act: Act
               <m.li key={l.id} layout="position" exit={itemExit} className="flex min-h-13 items-center gap-2 border-b border-line py-1.5 last:border-b-0">
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{quien}</p>
-                  <p className="text-small text-muted">{formatEuros(l.precio * l.cantidad)}</p>
+                  <p className="text-small text-muted">
+                    {l.mitades && `${l.producto} · `}
+                    {formatEuros(l.precio * l.cantidad)}
+                  </p>
                 </div>
                 <button
                   type="button"

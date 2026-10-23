@@ -11,6 +11,7 @@ Es una web estática (React + Vite + TypeScript, estilos con Tailwind y animacio
 - **Portada:** qué es la app, la cena guardada (para continuarla) y **Nueva cena**, que lleva a elegir restaurante.
 - **Gente:** apuntas a quién hay en la mesa. Tocar un nombre lleva a la carta para añadirle platos.
 - **Carta:** buscador (por nombre, categoría o ingrediente), saltos por categoría y, en cada plato, sus ingredientes si la carta los da. Al tocar un plato eliges cantidad y quién lo comparte; debajo, **Ya pedido** muestra los grupos que ya lo tienen para cambiar la cantidad o borrarlos.
+- **Mitad y mitad:** en las pizzas que lo permiten se elige la otra mitad; se apunta como "½ Atún + ½ Hawaiana" al precio de la más cara y cuenta en el "Ya pedido" de las dos.
 - **Resumen:** lo que le toca a cada uno (por consumo o a partes iguales), lo compartido por cada grupo (editable) y lo pedido.
 - **Pagar:** lo que ha puesto cada uno (o **Pagó todo**), lo que falta o sobra y quién paga a quién. **Compartir con el grupo** manda el resumen por el menú del móvil, y hay enlaces directos a WhatsApp y Telegram.
 - **Deshacer:** borrar un plato o quitar a alguien se puede deshacer durante unos segundos.
@@ -21,7 +22,7 @@ Es una web estática (React + Vite + TypeScript, estilos con Tailwind y animacio
 | Id | Restaurante |
 | --- | --- |
 | `padillas` | Merendero Padilla |
-| `l-atelier` | L’Atelier (pizzas, con ingredientes) |
+| `l-atelier` | L’Atelier (pizzas, con ingredientes; mitad y mitad en todas menos Pizza de Ajo y Burrata) |
 
 ## Desarrollo
 
@@ -44,12 +45,12 @@ La lógica (dinero en céntimos, cálculos, cartas, guardado) está en `src/lib/
      "carta": [
        { "categoria": "Raciones", "nombre": "Morcilla", "precio": 6.5 },
        { "categoria": "Raciones", "nombre": "Morcilla (media)", "precio": 3.5 },
-       { "categoria": "Pizzas", "nombre": "Hawaiana", "precio": 12, "descripcion": "Tomate, jamón York, piña natural, queso, olivas" }
+       { "categoria": "Pizzas", "nombre": "Hawaiana", "precio": 12, "descripcion": "Tomate, jamón York, piña natural, queso, olivas", "mitad": true }
      ]
    }
    ```
 
-   Precio en euros, como número. Si un plato tiene varios tamaños, pon un producto por tamaño. `descripcion` es opcional: úsala para los ingredientes cuando la carta los dé.
+   Precio en euros, como número. Si un plato tiene varios tamaños, pon un producto por tamaño. `descripcion` es opcional: úsala para los ingredientes cuando la carta los dé. `"mitad": true` marca las pizzas que se pueden pedir mitad y mitad (con otra que también lo tenga; se cobra la más cara).
 
 2. Añade el restaurante a `public/restaurantes/index.json`:
 

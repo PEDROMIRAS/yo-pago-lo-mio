@@ -94,3 +94,10 @@ export function textoCuentas(d: Dinner, restaurante: string): string {
       : ['Cuentas cuadradas, nadie debe nada']),
   ].join('\n');
 }
+
+/** Unidades pedidas de cada plato de la carta; una pizza mitad y mitad cuenta para las dos. */
+export function pedidosPorPlato(d: Dinner): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const l of d.lineas) for (const p of l.mitades ?? [l.producto]) m.set(p, (m.get(p) ?? 0) + l.cantidad);
+  return m;
+}

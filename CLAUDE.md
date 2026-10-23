@@ -17,13 +17,14 @@ El usuario pasa fotos o el texto de la carta. Transcríbela a `public/restaurant
   "nombre": "Merendero Padilla",
   "carta": [
     { "categoria": "Raciones", "nombre": "Morcilla", "precio": 6.5 },
-    { "categoria": "Pizzas", "nombre": "Hawaiana", "precio": 12, "descripcion": "Tomate, jamón York, piña natural, queso, olivas" }
+    { "categoria": "Pizzas", "nombre": "Hawaiana", "precio": 12, "descripcion": "Tomate, jamón York, piña natural, queso, olivas", "mitad": true }
   ]
 }
 ```
 
 - Precio en euros, como número. Si un plato tiene varios tamaños, va un producto por tamaño: `"Morcilla (media)"`.
 - `descripcion` es opcional: cópiala cuando la carta diga qué lleva el plato (ingredientes). Sale en la app bajo el nombre y el buscador también busca en ella.
+- `"mitad": true` es opcional: ponlo en los platos que el restaurante deja pedir mitad y mitad (en L’Atelier, todas las pizzas menos Pizza de Ajo y Burrata). La app cobra la mitad más cara.
 - Usa las categorías de la carta. Omite lo que no tenga precio fijo.
 - Si un precio no se lee bien, pregunta en vez de inventarlo.
 - Ejecuta `npm test`: un test comprueba que cada id de `index.json` tiene su fichero y que la carta carga.

@@ -5,7 +5,8 @@ import { Receipt, X } from '@phosphor-icons/react';
 import type { Dinner, Linea, Menu, MenuItem } from '../types';
 import type { Act } from '../useDinner';
 import { addLine, setModo, updateLine } from '../lib/dinner';
-import { blocks, breakdown, itemTotals, payStatus, shares } from '../lib/calc';
+import { blocks, breakdown, itemTotals, payStatus, pedidosPorPlato, shares } from '../lib/calc';
+import { opcionesMitad, pedidoDe } from '../lib/menu';
 import { formatEuros } from '../lib/money';
 import { exitFast, item } from '../motion';
 import { LineDialog } from './LineDialog';
@@ -147,7 +148,7 @@ export function SummaryTab(props: {
         <MenuList
           menu={menu}
           fija={false}
-          pedidos={new Map(totales.map(i => [i.producto, i.cantidad]))}
+          pedidos={pedidosPorPlato(dinner)}
           onPick={item => edicion?.tipo === 'elegir' && setEdicion({ tipo: 'nueva', item, personas: edicion.personas })}
         />
       </Modal>
@@ -162,6 +163,11 @@ export function SummaryTab(props: {
               : ''
         }
         descripcion={edicion?.tipo === 'nueva' ? edicion.item.descripcion : undefined}
+        mitades={
+          edicion?.tipo === 'nueva' && edicion.item.mitad
+            ? { precio: edicion.item.precio, opciones: opcionesMitad(menu, edicion.item) }
+            : undefined
+        }
         personas={dinner.personas}
         inicial={
           edicion?.tipo === 'editar'
@@ -169,12 +175,12 @@ export function SummaryTab(props: {
             : { cantidad: 1, personas: edicion?.tipo === 'nueva' ? edicion.personas : [] }
         }
         error={error}
-        onAccept={v => {
+        onAccept={({ cantidad, personas, otraMitad }) => {
           const ok =
             edicion?.tipo === 'editar'
-              ? act(d => updateLine(d, edicion.linea.id, v))
+              ? act(d => updateLine(d, edicion.linea.id, { cantidad, personas }))
               : edicion?.tipo === 'nueva' &&
-                act(d => addLine(d, { producto: edicion.item.nombre, precio: edicion.item.precio, ...v }));
+                act(d => addLine(d, { ...pedidoDe(menu, edicion.item, otraMitad), cantidad, personas }));
           if (ok) setEdicion(null);
         }}
         onClose={() => setEdicion(null)}
