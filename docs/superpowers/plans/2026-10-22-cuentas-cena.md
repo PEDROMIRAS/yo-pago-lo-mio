@@ -94,7 +94,7 @@ export type RestauranteRef = { id: string; nombre: string };
 **Interfaces:**
 - Produces: `parseEuros(text: string): number | null`, `formatEuros(cents: number): string`, `splitCents(total: number, n: number): number[]`; los tipos de `src/types.ts` (arriba).
 
-- [ ] **Step 1: Crear el proyecto**
+- [x] **Step 1: Crear el proyecto**
 
 ```bash
 npm create vite@latest . -- --template react-ts
@@ -106,7 +106,7 @@ El repo ya existe y tiene `docs/`, `CLAUDE.md` y `.gitignore`. Si `create-vite` 
 
 Borra el contenido de demo (`src/App.css`, `src/assets/`, el contador de `App.tsx`). Añade a `package.json` el script `"test": "vitest run"`. Crea `src/types.ts` con los tipos de arriba.
 
-- [ ] **Step 2: Escribir los tests que fallan**
+- [x] **Step 2: Escribir los tests que fallan**
 
 ```ts
 import { describe, expect, test } from 'vitest';
@@ -138,21 +138,21 @@ test('splitCents reparte el resto céntimo a céntimo desde el primero', () => {
 });
 ```
 
-- [ ] **Step 3: Ejecutar y ver que falla**
+- [x] **Step 3: Ejecutar y ver que falla**
 
 Run: `npx vitest run src/lib/money.test.ts`
 Expected: FAIL — no se puede resolver `./money`.
 
-- [ ] **Step 4: Implementar `src/lib/money.ts`**
+- [x] **Step 4: Implementar `src/lib/money.ts`**
 
 `parseEuros`: quitar espacios y `€`, vacío → 0, validar con `/^\d+([.,]\d{1,2})?$/`, convertir con aritmética entera de las dos partes (no `parseFloat * 100`). `splitCents`: `base = Math.floor(total / n)`, los primeros `total % n` reciben `base + 1`.
 
-- [ ] **Step 5: Ejecutar y ver que pasa**
+- [x] **Step 5: Ejecutar y ver que pasa**
 
 Run: `npx vitest run src/lib/money.test.ts`
 Expected: PASS (4 tests)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add -A
