@@ -86,6 +86,7 @@ export function MenuTab(props: {
       <LineDialog
         open={item !== null}
         titulo={item ? `${item.nombre} · ${formatEuros(item.precio)}` : ''}
+        descripcion={item?.descripcion}
         personas={dinner.personas}
         // sin nadie marcado: cada pedido es de un grupo distinto (salvo si se entra desde una persona)
         inicial={{ cantidad: 1, personas: activa ? [activa.id] : [] }}

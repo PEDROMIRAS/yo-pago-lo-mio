@@ -43,7 +43,8 @@ uno y quién tiene que pagar a quién para cuadrar.
   ```
 
   `categoria` es opcional (por defecto `Otros`). Las variantes (media ración / ración)
-  son productos distintos.
+  son productos distintos. `descripcion` también es opcional: los ingredientes del plato
+  cuando la carta los da (añadido el 2026-10-23; se ven bajo el nombre y entran en la búsqueda).
 - Para añadir un restaurante basta con crear su JSON y añadir una línea a `index.json`.
 - **En v1 las cartas se añaden a mano:** el usuario pasa fotos de la carta a Claude
   Code, que las transcribe a `public/restaurantes/<id>.json` y añade la línea a

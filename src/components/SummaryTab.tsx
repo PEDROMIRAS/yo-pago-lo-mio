@@ -161,6 +161,7 @@ export function SummaryTab(props: {
               ? `${edicion.item.nombre} · ${formatEuros(edicion.item.precio)}`
               : ''
         }
+        descripcion={edicion?.tipo === 'nueva' ? edicion.item.descripcion : undefined}
         personas={dinner.personas}
         inicial={
           edicion?.tipo === 'editar'

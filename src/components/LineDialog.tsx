@@ -9,6 +9,7 @@ type Valor = { cantidad: number; personas: string[] };
 type Props = {
   open: boolean;
   titulo: string;
+  descripcion?: string; // ingredientes del plato, bajo el título
   personas: Persona[];
   inicial: Valor;
   error?: string | null; // el aviso general queda tapado por el modal
@@ -27,7 +28,7 @@ export function LineDialog({ open, children, ...rest }: Props) {
   );
 }
 
-function LineForm({ titulo, personas, inicial, error, onAccept, onClose }: Omit<Props, 'open' | 'children'>) {
+function LineForm({ titulo, descripcion, personas, inicial, error, onAccept, onClose }: Omit<Props, 'open' | 'children'>) {
   const [cantidad, setCantidad] = useState(inicial.cantidad);
   const [sube, setSube] = useState(true);
   const [marcadas, setMarcadas] = useState(inicial.personas);
@@ -49,7 +50,8 @@ function LineForm({ titulo, personas, inicial, error, onAccept, onClose }: Omit<
         onAccept({ cantidad, personas: marcadas });
       }}
     >
-      <h2 className="mb-3 text-lg font-semibold">{titulo}</h2>
+      <h2 className={`text-lg font-semibold ${descripcion ? '' : 'mb-3'}`}>{titulo}</h2>
+      {descripcion && <p className="mt-0.5 mb-3 text-small text-muted">{descripcion}</p>}
 
       <div className="flex items-center justify-center gap-4">
         <button type="button" className="btn size-12 rounded-full px-0" aria-label="Menos" onClick={() => cambiar(-1)}>

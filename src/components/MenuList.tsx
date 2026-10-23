@@ -97,10 +97,13 @@ export function MenuList(props: { menu: Menu; pedidos: Map<string, number>; onPi
                 <li key={it.nombre} className="border-b border-line">
                   <button
                     type="button"
-                    className="-mx-2 flex min-h-13 w-[calc(100%+16px)] items-center gap-2 rounded-control px-2 text-left transition-colors duration-150 active:bg-line/60"
+                    className="-mx-2 flex min-h-13 w-[calc(100%+16px)] items-center gap-2 rounded-control px-2 py-2 text-left transition-colors duration-150 active:bg-line/60"
                     onClick={() => onPick(it)}
                   >
-                    <span className="min-w-0 flex-1">{it.nombre}</span>
+                    <span className="min-w-0 flex-1">
+                      {it.nombre}
+                      {it.descripcion && <span className="mt-0.5 block text-small text-muted">{it.descripcion}</span>}
+                    </span>
                     {n ? (
                       // key={n}: cada plato añadido hace rebotar el contador
                       <m.span

@@ -14,14 +14,19 @@ export function normalizeMenu(json: unknown): Menu {
     if (!isRecord(raw) || typeof raw.nombre !== 'string' || raw.nombre.trim() === '') {
       throw new Error(`El producto ${i + 1} de la carta no tiene nombre`);
     }
-    const { nombre, precio, categoria } = raw;
+    const { nombre, precio, categoria, descripcion } = raw;
     if (typeof precio !== 'number' || !Number.isFinite(precio) || precio < 0) {
       throw new Error(`"${nombre}" no tiene un precio válido`);
     }
+    if (descripcion !== undefined && typeof descripcion !== 'string') {
+      throw new Error(`"${nombre}" tiene una descripción que no es texto`);
+    }
+    const texto = descripcion?.trim();
     return {
       categoria: typeof categoria === 'string' && categoria.trim() !== '' ? categoria : 'Otros',
       nombre,
       precio: Math.round(precio * 100),
+      ...(texto ? { descripcion: texto } : {}),
     };
   });
   return { nombre, carta };
@@ -29,7 +34,7 @@ export function normalizeMenu(json: unknown): Menu {
 
 export function matchesQuery(item: MenuItem, query: string): boolean {
   const q = normalizeText(query.trim());
-  return normalizeText(item.nombre).includes(q) || normalizeText(item.categoria).includes(q);
+  return [item.nombre, item.categoria, item.descripcion ?? ''].some(t => normalizeText(t).includes(q));
 }
 
 async function fetchJson(file: string): Promise<unknown> {

@@ -47,3 +47,24 @@ test('loadMenu da el mismo error si la respuesta es 404', async () => {
   vi.stubGlobal('fetch', async () => new Response('', { status: 404 }));
   await expect(loadMenu('no-existe')).rejects.toThrow('No se pudo cargar la carta');
 });
+
+test('normalizeMenu guarda la descripción si la hay y la omite si no', () => {
+  const m = normalizeMenu({
+    nombre: 'X',
+    carta: [
+      { nombre: 'Hawaiana', precio: 12, descripcion: '  Tomate, piña, queso ' },
+      { nombre: 'Caña', precio: 2, descripcion: '   ' },
+      { nombre: 'Agua', precio: 1 },
+    ],
+  });
+  expect(m.carta[0].descripcion).toBe('Tomate, piña, queso');
+  expect('descripcion' in m.carta[1]).toBe(false);
+  expect('descripcion' in m.carta[2]).toBe(false);
+  expect(() => normalizeMenu({ nombre: 'X', carta: [{ nombre: 'Y', precio: 1, descripcion: 3 }] })).toThrow(/Y.*descripción/);
+});
+
+test('matchesQuery busca también por ingrediente', () => {
+  const item = { categoria: 'Clásicas', nombre: 'Hawaiana', precio: 1200, descripcion: 'Tomate, jamón York, piña natural' };
+  expect(matchesQuery(item, 'PIÑA')).toBe(true);
+  expect(matchesQuery(item, 'anchoas')).toBe(false);
+});
