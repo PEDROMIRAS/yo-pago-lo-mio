@@ -35,7 +35,10 @@ export function LineDialog({ open, children, ...rest }: Props) {
 
 function LineForm(props: Omit<Props, 'open' | 'children'>) {
   const { titulo, descripcion, mitades, personas, inicial, error, onAccept, onClose, porPersona } = props;
-  const [cantidad, setCantidad] = useState(inicial.cantidad);
+  // si el formulario se abre con gente ya marcada (un bloque del resumen), cada una ya cuenta
+  const [cantidad, setCantidad] = useState(() =>
+    porPersona ? cantidadAlMarcar(inicial.cantidad, 0, inicial.personas.length) : inicial.cantidad,
+  );
   const [sube, setSube] = useState(true);
   const [marcadas, setMarcadas] = useState(inicial.personas);
   const [otraMitad, setOtraMitad] = useState('');
