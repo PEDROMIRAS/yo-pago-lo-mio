@@ -540,21 +540,21 @@ git commit -m "feat: cálculo de cuotas, bloques y transferencias"
   - `App` controla `tab: 'gente' | 'carta' | 'resumen' | 'pagar'` y `activePersona: string | null` (para “añadir desde la persona”, la usa Task 6).
   - `PeopleTab({ dinner, act, onPick }: { dinner: Dinner; act: …; onPick: (personaId: string) => void })`
 
-- [ ] **Step 1: Implementar el arranque en `App.tsx`**
+- [x] **Step 1: Implementar el arranque en `App.tsx`**
 
 Al montar: `loadSession(browserStorage)`. Si hay sesión → pantalla “¿Continuar la cena en {nombre del restaurante} ({n} personas, guardada a las HH:MM) o empezar una nueva?” con botones **Continuar** (`resume`) y **Nueva cena** (`reset`). Si no → lista de `loadRestaurants()`; tocar uno → `start(id)`. Si falla la carga de carta → mensaje del error y botones **Reintentar** y **Nueva cena** (`reset`): si la cena guardada apunta a una carta que ya no existe (id cambiado o borrado), reintentar falla siempre y sin **Nueva cena** no habría salida.
 
 Con cena activa: cabecera con el nombre del restaurante, el total (`payStatus(dinner).total`) y un botón **Nueva cena** (pide `confirm('¿Borrar esta cena y empezar otra?')`). Barra inferior fija con las 4 pestañas. `error` se muestra como aviso que se cierra al tocarlo.
 
-- [ ] **Step 2: Implementar `PeopleTab`**
+- [x] **Step 2: Implementar `PeopleTab`**
 
 Input + botón **Añadir** (también con Enter) → `act(d => addPerson(d, nombre))` y vaciar el input solo si no hubo error. Lista de personas, cada una con su cuota (`shares`) y un botón ✕ → `act(d => removePerson(d, id))`. Tocar el nombre → `onPick(id)`, que en `App` pone `activePersona` y cambia a la pestaña Carta.
 
-- [ ] **Step 3: Estilos base en `src/styles.css`**
+- [x] **Step 3: Estilos base en `src/styles.css`**
 
 Mobile-first, una columna, zonas táctiles ≥ 44 px, barra de pestañas fija abajo, contenido con `padding-bottom` para que no lo tape.
 
-- [ ] **Step 4: Verificar en el navegador**
+- [x] **Step 4: Verificar en el navegador**
 
 Crea `.claude/launch.json` con una configuración `dev` (`npm run dev`, puerto 5173) y arráncala. Comprueba, a 375 px de ancho:
 - Sin sesión aparece la lista de restaurantes con “Merendero Padilla”; al tocarlo se abre la pestaña Gente.
@@ -563,7 +563,7 @@ Crea `.claude/launch.json` con una configuración `dev` (`npm run dev`, puerto 5
 - **Nueva cena** → confirmación → vuelve a la lista de restaurantes.
 - En DevTools → Application → Local Storage, cambiar el `restauranteId` guardado a `no-existe` y recargar → **Continuar** muestra el error con **Reintentar** y **Nueva cena**; **Nueva cena** vuelve a la lista.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A

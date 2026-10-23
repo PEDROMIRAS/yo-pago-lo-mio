@@ -1,4 +1,172 @@
+:root {
+  --bg: #fffaf3;
+  --fg: #2b2118;
+  --muted: #7a6a5c;
+  --line: #e6dccf;
+  --accent: #c2410c;
+  --accent-fg: #fff;
+  --error: #b91c1c;
+  --tabs-h: 60px;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1712;
+    --fg: #f3ece4;
+    --muted: #a8998a;
+    --line: #3a3128;
+    --accent: #fb923c;
+    --accent-fg: #1c1712;
+    --error: #f87171;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
+  font: 16px/1.4 system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+  min-height: 44px;
+}
+
+button {
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+}
+
+button.primary,
+form button[type='submit'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+button.link {
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+
+button.icon {
+  min-width: 44px;
+  padding: 0;
+}
+
+button.wide {
+  width: 100%;
+  text-align: left;
+}
+
+input,
+select {
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.row input,
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.list > li.row {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.error {
+  color: var(--error);
+}
+
+.center {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.content {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 16px calc(var(--tabs-h) + 24px);
+}
+
+.toast {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 8px 16px 0;
+  border-color: var(--error);
+  color: var(--error);
+  text-align: left;
+}
+
+.tabs {
+  position: fixed;
+  inset: auto 0 0 0;
+  height: var(--tabs-h);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tabs button {
+  border: none;
+  border-radius: 0;
+}
+
+.tabs button[aria-current='page'] {
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: inset 0 3px var(--accent);
 }

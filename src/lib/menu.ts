@@ -35,7 +35,10 @@ export function matchesQuery(item: MenuItem, query: string): boolean {
 async function fetchJson(file: string): Promise<unknown> {
   const res = await fetch(`${import.meta.env.BASE_URL}restaurantes/${file}.json`);
   if (!res.ok) throw new Error('No se pudo cargar la carta');
-  return res.json();
+  // un id inexistente puede volver como index.html con 200 (servidor de Vite, fallback del SW)
+  return res.json().catch(() => {
+    throw new Error('No se pudo cargar la carta');
+  });
 }
 
 export async function loadRestaurants(): Promise<RestauranteRef[]> {
