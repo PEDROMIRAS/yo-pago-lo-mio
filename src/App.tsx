@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
-import { X } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, X } from '@phosphor-icons/react';
 import { useDinner } from './useDinner';
 import { browserStorage, loadSession } from './lib/storage';
 import { payStatus } from './lib/calc';
@@ -13,11 +13,12 @@ import { PayTab } from './components/PayTab';
 import { Skeleton } from './components/Skeleton';
 import { Euros } from './components/Euros';
 import { Entrada } from './components/Entrada';
+import { Snackbar } from './components/Snackbar';
 import { TabBar } from './components/TabBar';
 import { ordenTab, type Tab } from './tabs';
 
 export default function App() {
-  const { dinner, menu, error, act, start, resume, reset, clearError } = useDinner();
+  const { dinner, menu, error, deshacer, act, undo, start, resume, reset, clearError } = useDinner();
   const [saved, setSaved] = useState(() => loadSession(browserStorage));
   // dir: +1 hacia la derecha de la barra, -1 hacia la izquierda; decide de qué lado entra la pestaña
   const [{ tab, dir }, setNav] = useState<{ tab: Tab; dir: number }>({ tab: 'gente', dir: 1 });
@@ -143,12 +144,20 @@ export default function App() {
                 onGoMenu={() => irA('carta')}
               />
             )}
-            {tab === 'pagar' && <PayTab dinner={dinner} act={act} onGoMenu={() => irA('carta')} />}
+            {tab === 'pagar' && <PayTab dinner={dinner} act={act} restaurante={menu.nombre} onGoMenu={() => irA('carta')} />}
           </m.main>
         </AnimatePresence>
       </div>
 
       <TabBar tab={tab} onChange={irA} />
+
+      <Snackbar id={deshacer?.n ?? null}>
+        <span className="min-w-0 flex-1 py-1 leading-snug">{deshacer?.texto}</span>
+        <button type="button" className="btn min-h-10 shrink-0 border-transparent px-3 font-semibold" onClick={undo}>
+          <ArrowCounterClockwise size={18} />
+          Deshacer
+        </button>
+      </Snackbar>
     </>
   );
 }

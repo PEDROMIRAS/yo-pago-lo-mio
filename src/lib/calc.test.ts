@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { createDinner, addPerson, addLine, setPago, setModo } from './dinner';
-import { shares, breakdown, itemTotals, blocks, payStatus, balances, settle } from './calc';
+import { shares, breakdown, itemTotals, blocks, payStatus, balances, settle, textoCuentas } from './calc';
 
 // Ana p1, Bea p2, Carlos p3, Dani p4
 const cena = () => {
@@ -90,4 +90,21 @@ test('persona sin pedidos que puso dinero recibe la devolución', () => {
   d = setPago(setPago(d, 'p1', 4000), eva, 50);
   expect(shares(d)[eva]).toBe(0);
   expect(balances(d)[eva]).toBe(50);
+});
+
+test('textoCuentas resume la cena para compartirla', () => {
+  const d = setPago(setPago(cena(), 'p1', 2000), 'p3', 2050);
+  expect(textoCuentas(d, 'Merendero Padilla').replace(/\s/g, ' ')).toBe(
+    ['Cena en Merendero Padilla: 40,50 € por consumo', 'Bea paga a Carlos 9,50 €', 'Bea paga a Ana 4,25 €', 'Dani paga a Ana 2,00 €'].join(' '),
+  );
+  const igual = setModo(setPago(cena(), 'p1', 4050), 'igual');
+  expect(textoCuentas(igual, 'X').split('\n')[0].replace(/\s/g, ' ')).toBe('Cena en X: 40,50 € a partes iguales');
+});
+
+test('textoCuentas sin nada que pagar entre ellos', () => {
+  let d = createDinner('x');
+  d = addPerson(d, 'Ana');
+  d = addLine(d, { producto: 'Caña', precio: 200, cantidad: 1, personas: ['p1'] });
+  d = setPago(d, 'p1', 200);
+  expect(textoCuentas(d, 'X').split('\n')[1]).toBe('Cuentas cuadradas, nadie debe nada');
 });

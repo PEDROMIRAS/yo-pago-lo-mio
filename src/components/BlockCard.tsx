@@ -56,7 +56,7 @@ export function BlockCard(props: {
                 type="button"
                 className="btn btn-icon"
                 aria-label={`Borrar ${l.producto}`}
-                onClick={() => act(d => removeLine(d, l.id))}
+                onClick={() => act(d => removeLine(d, l.id), `Borrado: ${l.cantidad} × ${l.producto}`)}
               >
                 <X size={18} />
               </button>

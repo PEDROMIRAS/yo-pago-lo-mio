@@ -81,7 +81,7 @@ export function PeopleTab(props: { dinner: Dinner; act: Act; onPick: (personaId:
                     type="button"
                     className="btn btn-icon"
                     aria-label={`Quitar a ${p.nombre}`}
-                    onClick={() => act(d => removePerson(d, p.id))}
+                    onClick={() => act(d => removePerson(d, p.id), `Quitaste a ${p.nombre}`)}
                   >
                     <X size={18} />
                   </button>

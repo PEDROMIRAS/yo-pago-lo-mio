@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
-import { ArrowRight, CheckCircle, Wallet } from '@phosphor-icons/react';
+import { ArrowRight, Check, CheckCircle, ShareNetwork, Wallet } from '@phosphor-icons/react';
 import type { Dinner } from '../types';
 import type { Act } from '../useDinner';
 import { nombreDe, pagaTodo, setModo, setPago } from '../lib/dinner';
-import { balances, payStatus, settle, shares } from '../lib/calc';
+import { balances, payStatus, settle, shares, textoCuentas } from '../lib/calc';
 import { formatEuros, parseEuros } from '../lib/money';
 import { exitFast, item } from '../motion';
 import { ModeToggle } from './ModeToggle';
@@ -14,12 +14,14 @@ import { Euros } from './Euros';
 
 const aTexto = (cents: number | undefined) => (cents ? (cents / 100).toFixed(2).replace('.', ',') : '');
 
-export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; onGoMenu: () => void }) {
+export function PayTab(props: { dinner: Dinner; act: Act; restaurante: string; onGoMenu: () => void }) {
+  const { dinner, act, restaurante, onGoMenu } = props;
   // lo que se está escribiendo; solo pasa a la cena al salir del campo
   const [textos, setTextos] = useState<Record<string, string>>(() =>
     Object.fromEntries(dinner.personas.map(p => [p.id, aTexto(dinner.pagos[p.id])])),
   );
   const [malos, setMalos] = useState<Set<string>>(new Set());
+  const [copiado, setCopiado] = useState(false);
 
   if (dinner.lineas.length === 0) {
     return (
@@ -51,6 +53,25 @@ export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; on
       return n;
     });
     if (cents !== null) act(d => setPago(d, id, cents));
+  };
+
+  // el menú de compartir del móvil (WhatsApp...); donde no existe, se copia al portapapeles
+  const compartir = async () => {
+    const text = textoCuentas(dinner, restaurante);
+    if (navigator.share) {
+      try {
+        return await navigator.share({ text });
+      } catch (e) {
+        if (e instanceof DOMException && e.name === 'AbortError') return; // lo cerró el usuario
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2500);
+    } catch {
+      // sin portapapeles (http, permisos): no hay nada más que hacer
+    }
   };
 
   const transferencias = diferencia === 0 && total > 0 ? settle(balances(dinner), dinner.personas.map(p => p.id)) : [];
@@ -166,6 +187,17 @@ export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; on
           </m.div>
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {(estado === 'pagos' || estado === 'cuadra') && (
+          <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: exitFast }}>
+            <button type="button" className="btn btn-primary mt-5 w-full" onClick={compartir}>
+              {copiado ? <Check size={20} /> : <ShareNetwork size={20} />}
+              {copiado ? 'Copiado, pégalo en el grupo' : 'Compartir con el grupo'}
+            </button>
+          </m.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

@@ -11,6 +11,7 @@ import { exitFast } from '../motion';
 import { LineDialog } from './LineDialog';
 import { MenuList } from './MenuList';
 import { EmptyState } from './EmptyState';
+import { Snackbar } from './Snackbar';
 
 export function MenuTab(props: {
   dinner: Dinner;
@@ -99,23 +100,10 @@ export function MenuTab(props: {
         onClose={() => setItem(null)}
       />
 
-      {/* región viva siempre montada para que el lector de pantalla anuncie cada aviso */}
-      <div role="status" className="pointer-events-none fixed inset-x-4 bottom-[calc(64px+14px+env(safe-area-inset-bottom))] z-30 mx-auto max-w-md">
-        <AnimatePresence mode="popLayout">
-          {hecho && (
-            <m.p
-              key={hecho.n}
-              className="flex items-center gap-2 rounded-box bg-fg px-4 py-3 text-bg shadow-soft"
-              initial={{ opacity: 0, y: 16, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, transition: exitFast }}
-            >
-              <CheckCircle size={20} weight="fill" className="shrink-0" />
-              {hecho.texto}
-            </m.p>
-          )}
-        </AnimatePresence>
-      </div>
+      <Snackbar id={hecho?.n ?? null}>
+        <CheckCircle size={20} weight="fill" className="shrink-0" />
+        <span className="py-1">{hecho?.texto}</span>
+      </Snackbar>
     </section>
   );
 }

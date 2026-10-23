@@ -1,5 +1,5 @@
 import type { Dinner, Linea } from '../types';
-import { splitCents } from './money';
+import { formatEuros, splitCents } from './money';
 
 export type Block = { personas: string[]; lineas: Linea[]; total: number; cuotas: Record<string, number> };
 type Transfer = { de: string; a: string; importe: number };
@@ -80,4 +80,17 @@ export function settle(bal: Record<string, number>, orden: string[]): Transfer[]
     if (acreedores[j].importe === 0) j++;
   }
   return out;
+}
+
+/** Resumen para mandar al grupo; tiene sentido cuando lo puesto cuadra con el total (diferencia 0). */
+export function textoCuentas(d: Dinner, restaurante: string): string {
+  const nombre = (id: string) => d.personas.find(p => p.id === id)?.nombre ?? '?';
+  const modo = d.modo === 'igual' ? 'a partes iguales' : 'por consumo';
+  const pagos = settle(balances(d), d.personas.map(p => p.id));
+  return [
+    `Cena en ${restaurante}: ${formatEuros(payStatus(d).total)} ${modo}`,
+    ...(pagos.length
+      ? pagos.map(t => `${nombre(t.de)} paga a ${nombre(t.a)} ${formatEuros(t.importe)}`)
+      : ['Cuentas cuadradas, nadie debe nada']),
+  ].join('\n');
 }
