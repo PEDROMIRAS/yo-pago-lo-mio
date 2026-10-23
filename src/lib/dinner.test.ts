@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { createDinner, addPerson, removePerson, addLine, updateLine, removeLine, addPersonToLines, setPago, setModo, pagaTodo, nombreDe } from './dinner';
+import { createDinner, addPerson, removePerson, addLine, updateLine, removeLine, addPersonToLines, setPago, setModo, pagaTodo, trasCambio } from './dinner';
 
 const base = () => addPerson(addPerson(createDinner('padillas'), 'Ana'), 'Bea'); // ids p1, p2
 
@@ -55,7 +55,12 @@ test('pagaTodo pone el total en una persona y borra lo que habían puesto las de
   expect(() => pagaTodo(d, 'p99')).toThrow(/persona/);
 });
 
-test('nombreDe da el nombre o ? si la persona no existe', () => {
-  expect(nombreDe(base(), 'p2')).toBe('Bea');
-  expect(nombreDe(base(), 'p99')).toBe('?');
+test('trasCambio: borrar se puede deshacer; cualquier otro cambio anula el deshacer pendiente', () => {
+  const antes = addLine(base(), { producto: 'Morcilla', precio: 650, cantidad: 1, personas: ['p1'] });
+  const borrado = trasCambio(null, antes, 'Borrado: 1 × Morcilla');
+  expect(borrado).toEqual({ n: 1, texto: 'Borrado: 1 × Morcilla', antes });
+  // apuntar un pago después: deshacer ya no puede devolver la cena de antes y perder el pago
+  expect(trasCambio(borrado, removeLine(antes, 'l3'))).toBeNull();
+  // un segundo borrado sustituye al primero con otro número, para que el aviso vuelva a salir
+  expect(trasCambio(borrado, antes, 'Quitaste a Bea')?.n).toBe(2);
 });

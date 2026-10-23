@@ -77,4 +77,12 @@ export function pagaTodo(d: Dinner, personaId: string): Dinner {
   return setPago({ ...d, pagos: {} }, personaId, payStatus(d).total);
 }
 
-export const nombreDe = (d: Dinner, id: string) => d.personas.find(p => p.id === id)?.nombre ?? '?';
+export type Deshacer = { n: number; texto: string; antes: Dinner };
+
+/**
+ * Deshacer pendiente tras un cambio: con `aviso`, se puede volver a `antes`. Cualquier otro
+ * cambio lo anula, porque volver atrás pisaría ese cambio (p. ej. un pago recién apuntado).
+ */
+export function trasCambio(prev: Deshacer | null, antes: Dinner, aviso?: string): Deshacer | null {
+  return aviso ? { n: (prev?.n ?? 0) + 1, texto: aviso, antes } : null;
+}

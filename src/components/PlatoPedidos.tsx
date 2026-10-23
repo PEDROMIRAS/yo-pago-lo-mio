@@ -3,7 +3,8 @@ import * as m from 'motion/react-m';
 import { ArrowCounterClockwise, Minus, Plus, X } from '@phosphor-icons/react';
 import type { Dinner } from '../types';
 import type { Act, Deshacer } from '../useDinner';
-import { nombreDe, removeLine, updateLine } from '../lib/dinner';
+import { removeLine, updateLine } from '../lib/dinner';
+import { nombreDe } from '../lib/calc';
 import { formatEuros } from '../lib/money';
 import { exitFast, itemExit } from '../motion';
 

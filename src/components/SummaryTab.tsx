@@ -6,7 +6,7 @@ import type { Dinner, Linea, Menu, MenuItem } from '../types';
 import type { Act } from '../useDinner';
 import { addLine, setModo, updateLine } from '../lib/dinner';
 import { blocks, breakdown, itemTotals, payStatus, pedidosPorPlato, shares } from '../lib/calc';
-import { opcionesMitad, pedidoDe } from '../lib/menu';
+import { mitadesDe, pedidoDe } from '../lib/menu';
 import { formatEuros } from '../lib/money';
 import { exitFast, item } from '../motion';
 import { LineDialog } from './LineDialog';
@@ -163,11 +163,7 @@ export function SummaryTab(props: {
               : ''
         }
         descripcion={edicion?.tipo === 'nueva' ? edicion.item.descripcion : undefined}
-        mitades={
-          edicion?.tipo === 'nueva' && edicion.item.mitad
-            ? { precio: edicion.item.precio, opciones: opcionesMitad(menu, edicion.item) }
-            : undefined
-        }
+        mitades={edicion?.tipo === 'nueva' ? mitadesDe(menu, edicion.item) : undefined}
         personas={dinner.personas}
         inicial={
           edicion?.tipo === 'editar'

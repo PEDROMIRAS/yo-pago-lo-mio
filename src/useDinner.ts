@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Dinner, Menu } from './types';
-import { createDinner } from './lib/dinner';
+import { createDinner, trasCambio, type Deshacer } from './lib/dinner';
 import { loadMenu } from './lib/menu';
 import { browserStorage, clearSession, saveSession } from './lib/storage';
 
 /** Aplica un cambio a la cena; con `aviso`, el cambio se puede deshacer unos segundos. */
 export type Act = (fn: (d: Dinner) => Dinner, aviso?: string) => boolean;
-export type Deshacer = { n: number; texto: string; antes: Dinner };
+export type { Deshacer };
 
 const SIN_GUARDAR = 'Este navegador no deja guardar la cena: no cierres la pestaña hasta terminar.';
 const DESHACER_MS = 5000;
@@ -39,8 +39,7 @@ export function useDinner() {
       const next = fn(antes);
       setDinner(next);
       guardar(next);
-      // cualquier otro cambio anula el deshacer anterior: volver atrás pisaría ese cambio
-      setDeshacer(prev => (aviso ? { n: (prev?.n ?? 0) + 1, texto: aviso, antes } : null));
+      setDeshacer(prev => trasCambio(prev, antes, aviso));
       return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

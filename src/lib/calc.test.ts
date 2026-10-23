@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { createDinner, addPerson, addLine, setPago, setModo } from './dinner';
-import { shares, breakdown, itemTotals, blocks, payStatus, balances, settle, textoCuentas, pedidosPorPlato } from './calc';
+import { shares, breakdown, itemTotals, blocks, payStatus, balances, settle, textoCuentas, pedidosPorPlato, nombreDe } from './calc';
 
 // Ana p1, Bea p2, Carlos p3, Dani p4
 const cena = () => {
@@ -117,4 +117,9 @@ test('pedidosPorPlato cuenta cada mitad para las dos pizzas', () => {
   expect(p.get('Atún')).toBe(3);
   expect(p.get('Hawaiana')).toBe(1);
   expect(p.has('½ Atún + ½ Hawaiana')).toBe(false);
+});
+
+test('nombreDe da el nombre o ? si la persona no existe', () => {
+  expect(nombreDe(cena(), 'p2')).toBe('Bea');
+  expect(nombreDe(cena(), 'p99')).toBe('?');
 });

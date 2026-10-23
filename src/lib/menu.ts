@@ -78,6 +78,8 @@ export function pedidoDe(menu: Menu, item: MenuItem, otraMitad?: string): { prod
   return mitadYMitad(item, otra);
 }
 
-/** Pizzas con las que se puede combinar `item` por mitades; vacío si no admite mitad. */
-export const opcionesMitad = (menu: Menu, item: MenuItem) =>
-  item.mitad ? menu.carta.filter(p => p.mitad && p.nombre !== item.nombre) : [];
+/** Para la hoja de pedido: el precio de `item` y las pizzas con las que combinarlo; undefined si no hay ninguna. */
+export function mitadesDe(menu: Menu, item: MenuItem): { precio: number; opciones: MenuItem[] } | undefined {
+  const opciones = item.mitad ? menu.carta.filter(p => p.mitad && p.nombre !== item.nombre) : [];
+  return opciones.length ? { precio: item.precio, opciones } : undefined;
+}

@@ -4,9 +4,9 @@ import * as m from 'motion/react-m';
 import { CheckCircle, Users, X } from '@phosphor-icons/react';
 import type { Dinner, Menu, MenuItem } from '../types';
 import type { Act, Deshacer } from '../useDinner';
-import { addLine, nombreDe } from '../lib/dinner';
-import { pedidosPorPlato } from '../lib/calc';
-import { opcionesMitad, pedidoDe } from '../lib/menu';
+import { addLine } from '../lib/dinner';
+import { nombreDe, pedidosPorPlato } from '../lib/calc';
+import { mitadesDe, pedidoDe } from '../lib/menu';
 import { formatEuros } from '../lib/money';
 import { exitFast } from '../motion';
 import { LineDialog } from './LineDialog';
@@ -51,10 +51,6 @@ export function MenuTab(props: {
 
   const activa = dinner.personas.find(p => p.id === activePersona);
   const pedidos = pedidosPorPlato(dinner);
-  const mitadesDe = (it: MenuItem) => {
-    const opciones = opcionesMitad(menu, it);
-    return opciones.length ? { precio: it.precio, opciones } : undefined;
-  };
 
   return (
     <section>
@@ -91,7 +87,7 @@ export function MenuTab(props: {
         open={item !== null}
         titulo={item ? `${item.nombre} · ${formatEuros(item.precio)}` : ''}
         descripcion={item?.descripcion}
-        mitades={item ? mitadesDe(item) : undefined}
+        mitades={item ? mitadesDe(menu, item) : undefined}
         personas={dinner.personas}
         // sin nadie marcado: cada pedido es de un grupo distinto (salvo si se entra desde una persona)
         inicial={{ cantidad: 1, personas: activa ? [activa.id] : [] }}

@@ -4,3 +4,4 @@ dev-dist/
 .env.local
 *.local
 .DS_Store
+graphify-out/

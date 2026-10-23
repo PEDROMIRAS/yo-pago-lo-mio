@@ -33,6 +33,8 @@ npm test        # tests de la lógica (Vitest)
 npm run build   # build de producción en dist/
 ```
 
+Los iconos de `public/` salen de `public/logo.svg`; si cambia el logo, regenéralos con `npx @vite-pwa/assets-generator --preset minimal-2023 public/logo.svg`.
+
 La lógica (dinero en céntimos, cálculos, cartas, guardado) está en `src/lib/` con sus tests; la interfaz en `src/components/`.
 
 ## Añadir un restaurante
