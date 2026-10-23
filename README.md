@@ -12,7 +12,7 @@ Es una web estática (React + Vite + TypeScript, estilos con Tailwind y animacio
 - **Gente:** apuntas a quién hay en la mesa. Tocar un nombre lleva a la carta para añadirle platos.
 - **Carta:** buscador (por nombre, categoría o ingrediente), saltos por categoría y, en cada plato, sus ingredientes si la carta los da. Al tocar un plato eliges cantidad y quién lo comparte (cada persona que marcas suma uno a la cantidad); si ese grupo ya lo tenía, se suma a su cantidad; debajo, **Ya pedido** muestra los grupos que ya lo tienen para cambiar la cantidad o borrarlos.
 - **Mitad y mitad:** en las pizzas que lo permiten se elige la otra mitad; se apunta como "½ Atún + ½ Hawaiana" al precio de la más cara y cuenta en el "Ya pedido" de las dos.
-- **Resumen:** lo que le toca a cada uno (por consumo o a partes iguales), lo compartido por cada grupo (editable) y lo pedido.
+- **Resumen:** lo que le toca a cada uno (por consumo o a partes iguales), lo compartido por cada grupo (editable; añadir a alguien a un grupo suma una unidad a cada plato) y lo pedido.
 - **Pagar:** lo que ha puesto cada uno (o **Pagó todo**), lo que falta o sobra y quién paga a quién. **Compartir con el grupo** manda el resumen por el menú del móvil, y hay enlaces directos a WhatsApp y Telegram.
 - **Deshacer:** borrar un plato o quitar a alguien se puede deshacer durante unos segundos.
 - La cena se guarda en el navegador; si no deja guardar, la app lo avisa.

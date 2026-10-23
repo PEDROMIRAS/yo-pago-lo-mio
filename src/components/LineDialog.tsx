@@ -19,7 +19,6 @@ type Props = {
   error?: string | null; // el aviso general queda tapado por el modal
   onAccept: (v: Valor) => void;
   onClose: () => void;
-  porPersona?: boolean; // al pedir (no al editar): cada persona marcada suma uno a la cantidad
   children?: ReactNode; // debajo del formulario, en la misma hoja
 };
 
@@ -34,19 +33,17 @@ export function LineDialog({ open, children, ...rest }: Props) {
 }
 
 function LineForm(props: Omit<Props, 'open' | 'children'>) {
-  const { titulo, descripcion, mitades, personas, inicial, error, onAccept, onClose, porPersona } = props;
-  // si el formulario se abre con gente ya marcada (un bloque del resumen), cada una ya cuenta
-  const [cantidad, setCantidad] = useState(() =>
-    porPersona ? cantidadAlMarcar(inicial.cantidad, 0, inicial.personas.length) : inicial.cantidad,
-  );
+  const { titulo, descripcion, mitades, personas, inicial, error, onAccept, onClose } = props;
+  const [cantidad, setCantidad] = useState(inicial.cantidad);
   const [sube, setSube] = useState(true);
   const [marcadas, setMarcadas] = useState(inicial.personas);
   const [otraMitad, setOtraMitad] = useState('');
   const otra = mitades?.opciones.find(o => o.nombre === otraMitad);
 
   const todas = marcadas.length === personas.length;
+  // cada persona marcada suma uno a la cantidad y desmarcarla lo resta
   const marcar = (nuevas: string[]) => {
-    if (porPersona && nuevas.length !== marcadas.length) {
+    if (nuevas.length !== marcadas.length) {
       setSube(nuevas.length > marcadas.length);
       setCantidad(c => cantidadAlMarcar(c, marcadas.length, nuevas.length));
     }

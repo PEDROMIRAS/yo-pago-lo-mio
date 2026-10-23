@@ -69,12 +69,13 @@ export function removeLine(d: Dinner, id: string): Dinner {
   return { ...d, lineas: d.lineas.filter(l => l.id !== id) };
 }
 
+/** Añade a alguien a varias líneas; cada una gana una unidad más, la suya. */
 export function addPersonToLines(d: Dinner, lineIds: string[], personaId: string): Dinner {
   if (!d.personas.some(p => p.id === personaId)) throw new Error('Elige al menos una persona');
   return {
     ...d,
     lineas: d.lineas.map(l =>
-      lineIds.includes(l.id) && !l.personas.includes(personaId) ? { ...l, personas: [...l.personas, personaId] } : l,
+      lineIds.includes(l.id) && !l.personas.includes(personaId) ? { ...l, cantidad: l.cantidad + 1, personas: [...l.personas, personaId] } : l,
     ),
   };
 }

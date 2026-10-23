@@ -44,8 +44,9 @@ test('updateLine, removeLine y addPersonToLines', () => {
   let d = addLine(base(), { producto: 'Patatas', precio: 400, cantidad: 1, personas: ['p1'] });
   d = updateLine(d, 'l3', { cantidad: 2 });
   expect(d.lineas[0].cantidad).toBe(2);
+  // añadir a alguien suma una unidad; repetirlo no hace nada
   d = addPersonToLines(addPersonToLines(d, ['l3'], 'p2'), ['l3'], 'p2');
-  expect(d.lineas[0].personas).toEqual(['p1', 'p2']);
+  expect(d.lineas[0]).toMatchObject({ personas: ['p1', 'p2'], cantidad: 3 });
   expect(() => updateLine(d, 'l3', { personas: [] })).toThrow(/persona/);
   expect(removeLine(d, 'l3').lineas).toEqual([]);
 });

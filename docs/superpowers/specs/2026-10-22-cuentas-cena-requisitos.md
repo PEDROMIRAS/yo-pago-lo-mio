@@ -66,9 +66,8 @@ uno y quién tiene que pagar a quién para cuadrar.
    - **Cantidad** (entero ≥ 1).
    - **Personas** que lo comparten (casillas + botón “Todos”). Al menos una. Cada
      persona que se marca suma uno a la cantidad y desmarcarla lo resta (nunca baja
-     de 1); si el formulario se abre con gente ya marcada (“Producto” de un bloque),
-     empieza con una por persona. Al editar una línea ya pedida, marcar gente no
-     cambia la cantidad.
+     de 1), también al editar una línea ya pedida. “Producto” de un bloque abre el
+     formulario con una por persona del bloque.
    - Aceptar → se añade una **línea de pedido**. Si esas mismas personas ya tienen
      ese plato (al mismo precio), se suma a su cantidad en vez de crear otra línea.
 4. **Añadir desde una persona**: al tocar a una persona, la carta queda “a nombre de”
@@ -80,8 +79,8 @@ uno y quién tiene que pagar a quién para cuadrar.
      las líneas que comparten. Ej.: *“Pedro + Paco: 3 morcillas, 1 patatas →
      23,50 € · 11,75 € cada uno”*. Desde un bloque se puede:
      - editar cualquier línea (cantidad y personas) o borrarla;
-     - **añadir una persona al bloque** (se suma a todas sus líneas; el bloque pasa
-       a ser el del nuevo grupo);
+     - **añadir una persona al bloque** (se suma a todas sus líneas, con una unidad
+       más en cada una; el bloque pasa a ser el del nuevo grupo);
      - **añadir un producto al bloque** (formulario con las personas del bloque ya
        marcadas).
    - Total de la cuenta y lo que le toca a cada persona según el modo de reparto
