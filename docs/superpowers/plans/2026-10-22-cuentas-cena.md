@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Sin backend ni servicios externos; sin dependencias de runtime aparte de `react` y `react-dom`.
+- Sin backend ni servicios externos. Dependencias de runtime: `react`, `react-dom`, `motion` (animación) y `@phosphor-icons/react` (iconos); estilos con Tailwind v4 (dev). Ampliado a petición del usuario el 2026-10-23.
 - Dinero siempre en **céntimos enteros** dentro de `src/`; solo el JSON de la carta usa euros con decimales.
 - Textos de UI en español; formato de importes `Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' })`.
 - Mobile-first: usable a 360 px de ancho sin scroll horizontal.

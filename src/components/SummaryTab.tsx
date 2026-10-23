@@ -1,21 +1,28 @@
 import { useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
+import { Plus, Receipt, X } from '@phosphor-icons/react';
 import type { Dinner, Linea, Menu, MenuItem } from '../types';
 import type { Act } from '../useDinner';
 import { addLine, addPersonToLines, removeLine, setModo, updateLine } from '../lib/dinner';
 import { blocks, breakdown, itemTotals, payStatus, shares } from '../lib/calc';
 import { formatEuros } from '../lib/money';
+import { exitFast, item, itemExit } from '../motion';
 import { LineDialog } from './LineDialog';
 import { MenuList } from './MenuList';
 import { Modal } from './Modal';
 import { ModeToggle } from './ModeToggle';
-import { Icon } from './Icon';
 import { EmptyState } from './EmptyState';
+import { Euros } from './Euros';
 
 type Edicion =
   | { tipo: 'editar'; linea: Linea }
   | { tipo: 'elegir'; personas: string[] }
   | { tipo: 'nueva'; item: MenuItem; personas: string[] }
   | null;
+
+const h2 = 'mt-7 mb-2.5 text-lg font-semibold first:mt-0';
+const fila = 'flex items-center gap-2';
 
 export function SummaryTab(props: {
   dinner: Dinner;
@@ -31,7 +38,7 @@ export function SummaryTab(props: {
   if (dinner.lineas.length === 0) {
     return (
       <EmptyState
-        icon="receipt"
+        icon={Receipt}
         titulo="Aún no habéis pedido nada"
         texto="Cuando apuntes platos en la carta, aquí verás lo que le toca a cada uno."
         accion={{ label: 'Ir a la carta', onClick: onGoMenu }}
@@ -51,126 +58,159 @@ export function SummaryTab(props: {
 
   return (
     <section>
-      <h2>Por persona</h2>
-      <ModeToggle modo={dinner.modo} onChange={m => act(d => setModo(d, m))} />
-      {dinner.modo === 'igual' && (
-        <p className="muted">
-          Total {formatEuros(total)} entre {dinner.personas.length} personas
-        </p>
-      )}
-      <ul className="rows">
-        {dinner.personas.map(p => (
-          <li key={p.id}>
-            <div className="row">
-              <strong className="grow">{p.nombre}</strong>
-              <strong>{formatEuros(cuotas[p.id] ?? 0)}</strong>
+      <h2 className={h2}>Por persona</h2>
+      <ModeToggle modo={dinner.modo} onChange={modo => act(d => setModo(d, modo))} />
+      <AnimatePresence initial={false}>
+        {dinner.modo === 'igual' && (
+          <m.p className="mt-2 text-muted" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: exitFast }}>
+            Total {formatEuros(total)} entre {dinner.personas.length} personas
+          </m.p>
+        )}
+      </AnimatePresence>
+      <ul className="mt-2">
+        {dinner.personas.map((p, i) => (
+          <m.li key={p.id} layout="position" variants={item} initial="hidden" animate="show" custom={i} className="border-b border-line py-2">
+            <div className={fila}>
+              <strong className="flex-1">{p.nombre}</strong>
+              {/* al cambiar de modo, cada cuota cuenta hasta su valor nuevo */}
+              <Euros cents={cuotas[p.id] ?? 0} className="font-semibold" />
             </div>
-            {dinner.modo === 'consumo' &&
-              (desglose[p.id]?.length ? (
-                <ul className="sub muted">
-                  {desglose[p.id].map(({ linea, parte }) => (
-                    <li key={linea.id} className="row">
-                      <span className="grow">
-                        {linea.cantidad} × {linea.producto}
-                        {linea.personas.length > 1 && ` (entre ${linea.personas.length})`}
-                      </span>
-                      <span>{formatEuros(parte)}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted sub">No ha pedido nada</p>
-              ))}
-          </li>
-        ))}
-      </ul>
-
-      <h2>Compartido entre…</h2>
-      {blocks(dinner).map(b => {
-        const partes = Object.values(b.cuotas);
-        const min = Math.min(...partes);
-        const max = Math.max(...partes);
-        const fuera = dinner.personas.filter(p => !b.personas.includes(p.id));
-        return (
-          <article key={b.personas.join()} className="card">
-            <div className="row">
-              <h3 className="grow">{b.personas.map(nombre).join(' + ')}</h3>
-              <strong>{formatEuros(b.total)}</strong>
-            </div>
-            {b.personas.length > 1 && (
-              <p className="muted sub">
-                {min === max ? formatEuros(min) : `${formatEuros(min).replace(/\s*€/, '')}-${formatEuros(max)}`} cada uno
-              </p>
-            )}
-            <ul className="rows">
-              {b.lineas.map(l => (
-                <li key={l.id} className="row">
-                  <span className="grow">
-                    {l.cantidad} × {l.producto} · {formatEuros(l.precio * l.cantidad)}
-                  </span>
-                  <button type="button" onClick={() => abrir({ tipo: 'editar', linea: l })}>
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    className="icon ghost"
-                    aria-label={`Borrar ${l.producto}`}
-                    onClick={() => act(d => removeLine(d, l.id))}
-                  >
-                    <Icon name="x" size={18} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <div className="row add">
-              {fuera.length > 0 && (
-                <select
-                  aria-label="Añadir persona a lo compartido"
-                  value=""
-                  onChange={e => act(d => addPersonToLines(d, b.lineas.map(l => l.id), e.target.value))}
+            <AnimatePresence initial={false}>
+              {dinner.modo === 'consumo' && (
+                <m.div
+                  className="overflow-hidden text-[0.95rem] text-muted"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0, transition: exitFast }}
                 >
-                  <option value="">Añadir a…</option>
-                  {fuera.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.nombre}
-                    </option>
-                  ))}
-                </select>
+                  {desglose[p.id]?.length ? (
+                    <ul className="mt-0.5">
+                      {desglose[p.id].map(({ linea, parte }) => (
+                        <li key={linea.id} className={fila}>
+                          <span className="flex-1">
+                            {linea.cantidad} × {linea.producto}
+                            {linea.personas.length > 1 && ` (entre ${linea.personas.length})`}
+                          </span>
+                          <span>{formatEuros(parte)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-0.5">No ha pedido nada</p>
+                  )}
+                </m.div>
               )}
-              <button type="button" onClick={() => abrir({ tipo: 'elegir', personas: b.personas })}>
-                <Icon name="plus" size={18} />
-                Producto
-              </button>
-            </div>
-          </article>
-        );
-      })}
-
-      <h2>Lo pedido</h2>
-      <ul className="rows">
-        {totales.map(it => (
-          <li key={it.producto} className="row">
-            <span className="grow">
-              {it.cantidad} × {it.producto}
-            </span>
-            <span>{formatEuros(it.total)}</span>
-          </li>
+            </AnimatePresence>
+          </m.li>
         ))}
       </ul>
-      <p className="row total">
-        <strong className="grow">Total de la cuenta</strong>
-        <strong>{formatEuros(total)}</strong>
-      </p>
+
+      <h2 className={h2}>Compartido entre…</h2>
+      <AnimatePresence initial={false} mode="popLayout">
+        {blocks(dinner).map(b => {
+          const partes = Object.values(b.cuotas);
+          const min = Math.min(...partes);
+          const max = Math.max(...partes);
+          const fuera = dinner.personas.filter(p => !b.personas.includes(p.id));
+          return (
+            <m.article
+              key={b.personas.join()}
+              layout
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.97, transition: exitFast }}
+              className="mb-3 rounded-box border border-line bg-surface px-4 pt-3.5 pb-3"
+            >
+              <div className={fila}>
+                <h3 className="flex-1 font-semibold">{b.personas.map(nombre).join(' + ')}</h3>
+                <Euros cents={b.total} className="font-semibold" />
+              </div>
+              {b.personas.length > 1 && (
+                <p className="mt-0.5 text-[0.95rem] text-muted">
+                  {min === max ? formatEuros(min) : `${formatEuros(min).replace(/\s*€/, '')}-${formatEuros(max)}`} cada uno
+                </p>
+              )}
+              <ul className="mt-2">
+                <AnimatePresence initial={false}>
+                  {b.lineas.map(l => (
+                    <m.li
+                      key={l.id}
+                      layout="position"
+                      exit={itemExit}
+                      className={`${fila} min-h-13 border-b border-line py-1.5 last:border-b-0`}
+                    >
+                      <span className="flex-1">
+                        {l.cantidad} × {l.producto} · {formatEuros(l.precio * l.cantidad)}
+                      </span>
+                      <button type="button" className="btn" onClick={() => abrir({ tipo: 'editar', linea: l })}>
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-icon"
+                        aria-label={`Borrar ${l.producto}`}
+                        onClick={() => act(d => removeLine(d, l.id))}
+                      >
+                        <X size={18} />
+                      </button>
+                    </m.li>
+                  ))}
+                </AnimatePresence>
+              </ul>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {fuera.length > 0 && (
+                  <select
+                    className="min-w-35 flex-1"
+                    aria-label="Añadir persona a lo compartido"
+                    value=""
+                    onChange={e => act(d => addPersonToLines(d, b.lineas.map(l => l.id), e.target.value))}
+                  >
+                    <option value="">Añadir a…</option>
+                    {fuera.map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <button type="button" className="btn min-w-35 flex-1" onClick={() => abrir({ tipo: 'elegir', personas: b.personas })}>
+                  <Plus size={18} />
+                  Producto
+                </button>
+              </div>
+            </m.article>
+          );
+        })}
+      </AnimatePresence>
+
+      <m.div layout="position">
+        <h2 className={h2}>Lo pedido</h2>
+        <ul>
+          {totales.map(it => (
+            <li key={it.producto} className={`${fila} min-h-11 border-b border-line`}>
+              <span className="flex-1">
+                {it.cantidad} × {it.producto}
+              </span>
+              <span>{formatEuros(it.total)}</span>
+            </li>
+          ))}
+        </ul>
+        <p className={`${fila} mt-4 border-t-2 border-fg pt-3`}>
+          <strong className="flex-1">Total de la cuenta</strong>
+          <Euros cents={total} className="font-semibold" />
+        </p>
+      </m.div>
 
       <Modal open={edicion?.tipo === 'elegir'} onClose={() => setEdicion(null)} label="Elegir producto">
-        <div className="row">
-          <h2 className="grow">Elegir producto</h2>
-          <button type="button" className="icon ghost" aria-label="Cerrar" onClick={() => setEdicion(null)}>
-            <Icon name="x" size={18} />
+        <div className={`${fila} mb-2`}>
+          <h2 className="flex-1 text-lg font-semibold">Elegir producto</h2>
+          <button type="button" className="btn btn-icon" aria-label="Cerrar" onClick={() => setEdicion(null)}>
+            <X size={18} />
           </button>
         </div>
         <MenuList
           menu={menu}
+          fija={false}
           pedidos={new Map(totales.map(i => [i.producto, i.cantidad]))}
           onPick={item => edicion?.tipo === 'elegir' && setEdicion({ tipo: 'nueva', item, personas: edicion.personas })}
         />

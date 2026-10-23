@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
+import { CheckCircle, Users, X } from '@phosphor-icons/react';
 import type { Dinner, Menu, MenuItem } from '../types';
 import type { Act } from '../useDinner';
 import { addLine } from '../lib/dinner';
 import { itemTotals } from '../lib/calc';
 import { formatEuros } from '../lib/money';
+import { exitFast } from '../motion';
 import { LineDialog } from './LineDialog';
 import { MenuList } from './MenuList';
 import { EmptyState } from './EmptyState';
-import { Icon } from './Icon';
 
 export function MenuTab(props: {
   dinner: Dinner;
@@ -23,7 +26,8 @@ export function MenuTab(props: {
 }) {
   const { dinner, menu, act, error, clearError, activePersona, onClearPersona, onGoPeople, ultimas, setUltimas } = props;
   const [item, setItem] = useState<MenuItem | null>(null);
-  const [hecho, setHecho] = useState<string | null>(null);
+  // n: cada aviso es nuevo aunque el texto se repita, para que vuelva a entrar
+  const [hecho, setHecho] = useState<{ n: number; texto: string } | null>(null);
 
   useEffect(() => {
     if (!hecho) return;
@@ -34,7 +38,7 @@ export function MenuTab(props: {
   if (dinner.personas.length === 0) {
     return (
       <EmptyState
-        icon="users"
+        icon={Users}
         titulo="Primero, la gente"
         texto="Para repartir cada plato hace falta saber quién está en la mesa."
         accion={{ label: 'Ir a Gente', onClick: onGoPeople }}
@@ -49,16 +53,25 @@ export function MenuTab(props: {
 
   return (
     <section>
-      {activa && (
-        <div className="row banner">
-          <span className="grow">
-            Añadiendo para <strong>{activa.nombre}</strong>
-          </span>
-          <button type="button" className="icon ghost" aria-label="Dejar de añadir para una persona" onClick={onClearPersona}>
-            <Icon name="x" size={18} />
-          </button>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {activa && (
+          <m.div
+            className="overflow-hidden"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0, transition: exitFast }}
+          >
+            <div className="mb-3 flex items-center gap-2 rounded-box bg-accent-soft pl-3.5">
+              <span className="flex-1">
+                Añadiendo para <strong>{activa.nombre}</strong>
+              </span>
+              <button type="button" className="btn btn-icon" aria-label="Dejar de añadir para una persona" onClick={onClearPersona}>
+                <X size={18} />
+              </button>
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
 
       <MenuList
         menu={menu}
@@ -79,17 +92,30 @@ export function MenuTab(props: {
         onAccept={({ cantidad, personas }) => {
           if (item && act(d => addLine(d, { producto: item.nombre, precio: item.precio, cantidad, personas }))) {
             if (!activa) setUltimas(personas);
-            setHecho(`Añadido: ${cantidad} × ${item.nombre} · ${nombres(personas)}`);
+            setHecho(h => ({ n: (h?.n ?? 0) + 1, texto: `Añadido: ${cantidad} × ${item.nombre} · ${nombres(personas)}` }));
             setItem(null);
           }
         }}
         onClose={() => setItem(null)}
       />
 
-      <p className={hecho ? 'snackbar show' : 'snackbar'} role="status">
-        {hecho && <Icon name="check" size={18} />}
-        {hecho}
-      </p>
+      {/* región viva siempre montada para que el lector de pantalla anuncie cada aviso */}
+      <div role="status" className="pointer-events-none fixed inset-x-4 bottom-[calc(64px+14px+env(safe-area-inset-bottom))] z-30 mx-auto max-w-md">
+        <AnimatePresence mode="popLayout">
+          {hecho && (
+            <m.p
+              key={hecho.n}
+              className="flex items-center gap-2 rounded-box bg-fg px-4 py-3 text-bg shadow-soft"
+              initial={{ opacity: 0, y: 16, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, transition: exitFast }}
+            >
+              <CheckCircle size={20} weight="fill" className="shrink-0" />
+              {hecho.texto}
+            </m.p>
+          )}
+        </AnimatePresence>
+      </div>
     </section>
   );
 }

@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
+import { Minus, Plus } from '@phosphor-icons/react';
 import type { Persona } from '../types';
 import { Modal } from './Modal';
-import { Icon } from './Icon';
 
 type Valor = { cantidad: number; personas: string[] };
 type Props = {
@@ -25,58 +27,91 @@ export function LineDialog({ open, ...rest }: Props) {
 
 function LineForm({ titulo, personas, inicial, error, onAccept, onClose }: Omit<Props, 'open'>) {
   const [cantidad, setCantidad] = useState(inicial.cantidad);
+  const [sube, setSube] = useState(true);
   const [marcadas, setMarcadas] = useState(inicial.personas);
 
   const todas = marcadas.length === personas.length;
   // mantener el orden de la mesa, no el orden en que se marcaron
   const toggle = (id: string) =>
-    setMarcadas(m => personas.map(p => p.id).filter(x => (x === id ? !m.includes(id) : m.includes(x))));
+    setMarcadas(prev => personas.map(p => p.id).filter(x => (x === id ? !prev.includes(id) : prev.includes(x))));
+  const cambiar = (d: number) => {
+    setSube(d > 0);
+    setCantidad(c => Math.max(1, c + d));
+  };
 
   return (
     <form
+      className="pb-1"
       onSubmit={e => {
         e.preventDefault();
         onAccept({ cantidad, personas: marcadas });
       }}
     >
-      <h2>{titulo}</h2>
+      <h2 className="mb-3 text-lg font-semibold">{titulo}</h2>
 
-      <div className="row stepper">
-        <button type="button" aria-label="Menos" onClick={() => setCantidad(c => Math.max(1, c - 1))}>
-          <Icon name="minus" />
+      <div className="flex items-center justify-center gap-4">
+        <button type="button" className="btn size-12 rounded-full px-0" aria-label="Menos" onClick={() => cambiar(-1)}>
+          <Minus />
         </button>
-        <output aria-label="Cantidad">
-          {cantidad}
+        <output aria-label="Cantidad" className="relative grid h-10 min-w-[3ch] place-items-center overflow-hidden text-2xl font-semibold">
+          {/* el número entra desde la dirección del cambio */}
+          <AnimatePresence initial={false} mode="popLayout" custom={sube}>
+            <m.span
+              key={cantidad}
+              custom={sube}
+              variants={{ from: (s: boolean) => ({ y: s ? 18 : -18, opacity: 0 }), to: (s: boolean) => ({ y: s ? -18 : 18, opacity: 0 }) }}
+              initial="from"
+              animate={{ y: 0, opacity: 1 }}
+              exit="to"
+            >
+              {cantidad}
+            </m.span>
+          </AnimatePresence>
         </output>
-        <button type="button" aria-label="Más" onClick={() => setCantidad(c => c + 1)}>
-          <Icon name="plus" />
+        <button type="button" className="btn size-12 rounded-full px-0" aria-label="Más" onClick={() => cambiar(1)}>
+          <Plus />
         </button>
       </div>
 
-      <fieldset>
-        <legend>¿Quién lo comparte?</legend>
-        <button type="button" onClick={() => setMarcadas(todas ? [] : personas.map(p => p.id))}>
+      <fieldset className="my-4 grid gap-0.5 rounded-box border border-line px-3 py-2">
+        <legend className="px-1 font-semibold">¿Quién lo comparte?</legend>
+        <button type="button" className="btn" onClick={() => setMarcadas(todas ? [] : personas.map(p => p.id))}>
           {todas ? 'Ninguno' : 'Todos'}
         </button>
         {personas.map(p => (
-          <label key={p.id} className="check">
-            <input type="checkbox" checked={marcadas.includes(p.id)} onChange={() => toggle(p.id)} />
+          <label key={p.id} className="flex min-h-11 items-center gap-3">
+            <input
+              type="checkbox"
+              className="size-5.5 accent-accent"
+              checked={marcadas.includes(p.id)}
+              onChange={() => toggle(p.id)}
+            />
             {p.nombre}
           </label>
         ))}
       </fieldset>
 
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
-      )}
+      <AnimatePresence>
+        {error && (
+          <m.p
+            role="alert"
+            className="mb-3 text-error"
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: [6, -4, 2, 0] }}
+            exit={{ opacity: 0 }}
+          >
+            {error}
+          </m.p>
+        )}
+      </AnimatePresence>
 
-      <div className="row actions">
-        <button type="button" onClick={onClose}>
+      <div className="flex justify-end gap-2">
+        <button type="button" className="btn" onClick={onClose}>
           Cancelar
         </button>
-        <button type="submit">Aceptar</button>
+        <button type="submit" className="btn btn-primary">
+          Aceptar
+        </button>
       </div>
     </form>
   );

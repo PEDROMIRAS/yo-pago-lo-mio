@@ -1,12 +1,16 @@
-import { useState, type CSSProperties } from 'react';
+import { useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
+import { ArrowRight, CheckCircle, Wallet } from '@phosphor-icons/react';
 import type { Dinner } from '../types';
 import type { Act } from '../useDinner';
 import { setModo, setPago } from '../lib/dinner';
 import { balances, payStatus, settle, shares } from '../lib/calc';
 import { formatEuros, parseEuros } from '../lib/money';
+import { exitFast, item } from '../motion';
 import { ModeToggle } from './ModeToggle';
-import { Icon } from './Icon';
 import { EmptyState } from './EmptyState';
+import { Euros } from './Euros';
 
 const aTexto = (cents: number | undefined) => (cents ? (cents / 100).toFixed(2).replace('.', ',') : '');
 
@@ -20,7 +24,7 @@ export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; on
   if (dinner.lineas.length === 0) {
     return (
       <EmptyState
-        icon="wallet"
+        icon={Wallet}
         titulo="No hay nada que pagar todavía"
         texto="Apunta en la carta lo que se pide y aquí saldrá quién paga a quién."
         accion={{ label: 'Ir a la carta', onClick: onGoMenu }}
@@ -41,8 +45,8 @@ export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; on
 
   const guardar = (id: string) => {
     const cents = parseEuros(textos[id] ?? '');
-    setMalos(m => {
-      const n = new Set(m);
+    setMalos(prev => {
+      const n = new Set(prev);
       if (cents === null) n.add(id);
       else n.delete(id);
       return n;
@@ -51,31 +55,37 @@ export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; on
   };
 
   const transferencias = diferencia === 0 && total > 0 ? settle(balances(dinner), dinner.personas.map(p => p.id)) : [];
+  // un solo mensaje de estado a la vez; al cambiar, el anterior sale y entra el nuevo
+  const estado =
+    pagado === 0 ? 'vacio' : diferencia < 0 ? 'faltan' : diferencia > 0 ? 'sobran' : transferencias.length ? 'pagos' : 'cuadra';
 
   return (
     <section>
-      <ModeToggle modo={dinner.modo} onChange={m => act(d => setModo(d, m))} />
+      <ModeToggle modo={dinner.modo} onChange={modo => act(d => setModo(d, modo))} />
 
-      <ul className="rows pay">
+      <ul className="mt-2">
         {dinner.personas.map((p, i) => {
           const malo = malos.has(p.id);
           return (
-            <li key={p.id} style={{ '--i': i } as CSSProperties}>
-              <div className="row">
-                <div className="grow">
+            <m.li key={p.id} variants={item} initial="hidden" animate="show" custom={i} className="border-b border-line py-3">
+              <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
                   <strong>{p.nombre}</strong>
-                  <div className="muted">le toca {formatEuros(cuotas[p.id] ?? 0)}</div>
+                  <div className="text-muted">
+                    le toca <Euros cents={cuotas[p.id] ?? 0} />
+                  </div>
                   {total > 0 && dinner.pagos[p.id] !== total && (
-                    <button type="button" className="small" onClick={() => pagoTodo(p.id)}>
+                    <button type="button" className="btn mt-1.5 min-h-9 px-3 text-[0.9rem]" onClick={() => pagoTodo(p.id)}>
                       Pagó todo
                     </button>
                   )}
                 </div>
-                <label className="paid">
-                  <span className="muted">ha puesto</span>
+                <label className="grid justify-items-end gap-1 text-[0.85rem]">
+                  <span className="text-muted">ha puesto</span>
                   <input
                     inputMode="decimal"
                     placeholder="0,00"
+                    className={`w-30 text-right text-base ${malo ? 'border-error' : ''}`}
                     aria-invalid={malo}
                     aria-describedby={malo ? `err-${p.id}` : undefined}
                     value={textos[p.id] ?? ''}
@@ -85,44 +95,77 @@ export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; on
                   />
                 </label>
               </div>
-              {malo && (
-                <p id={`err-${p.id}`} className="error">
-                  Importe no válido
-                </p>
-              )}
-            </li>
+              <AnimatePresence>
+                {malo && (
+                  <m.p
+                    id={`err-${p.id}`}
+                    className="mt-1 text-error"
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: [6, -4, 2, 0] }}
+                    exit={{ opacity: 0, transition: exitFast }}
+                  >
+                    Importe no válido
+                  </m.p>
+                )}
+              </AnimatePresence>
+            </m.li>
           );
         })}
       </ul>
 
-      <div className="status" aria-live="polite">
-        {pagado === 0 && total > 0 && (
-          <p className="muted">Total {formatEuros(total)}. Apunta lo que ha puesto cada uno.</p>
-        )}
-        {pagado > 0 && diferencia < 0 && <p className="warn">Faltan {formatEuros(-diferencia)}</p>}
-        {diferencia > 0 && <p className="warn">Sobran {formatEuros(diferencia)}</p>}
-        {diferencia === 0 && total > 0 && (
-          transferencias.length === 0 ? (
-            <p>Cuentas cuadradas, nadie debe nada</p>
-          ) : (
-            <>
-              <h2>Quién paga a quién</h2>
-              <ul className="rows">
-                {transferencias.map((t, i) => (
-                  <li key={`${t.de}-${t.a}`} className="row" style={{ '--i': i } as CSSProperties}>
-                    <span className="grow row transfer">
-                      {nombre(t.de)}
-                      <Icon name="arrow" size={18} />
-                      <span className="sr-only">paga a</span>
-                      {nombre(t.a)}
-                    </span>
-                    <strong>{formatEuros(t.importe)}</strong>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )
-        )}
+      <div className="mt-4" aria-live="polite">
+        <AnimatePresence mode="wait" initial={false}>
+          <m.div
+            key={estado}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4, transition: exitFast }}
+          >
+            {estado === 'vacio' && <p className="text-muted">Total {formatEuros(total)}. Apunta lo que ha puesto cada uno.</p>}
+            {estado === 'faltan' && (
+              <p className="font-semibold text-warn">
+                Faltan <Euros cents={-diferencia} />
+              </p>
+            )}
+            {estado === 'sobran' && (
+              <p className="font-semibold text-warn">
+                Sobran <Euros cents={diferencia} />
+              </p>
+            )}
+            {estado === 'cuadra' && (
+              <p className="flex items-center gap-2 font-semibold">
+                <CheckCircle size={22} weight="fill" className="text-accent" />
+                Cuentas cuadradas, nadie debe nada
+              </p>
+            )}
+            {estado === 'pagos' && (
+              <>
+                <h2 className="mb-2.5 text-lg font-semibold">Quién paga a quién</h2>
+                <ul>
+                  {transferencias.map((t, i) => (
+                    <m.li
+                      key={`${t.de}-${t.a}`}
+                      layout="position"
+                      variants={item}
+                      initial="hidden"
+                      animate="show"
+                      custom={i}
+                      className="flex min-h-13 items-center gap-2 border-b border-line"
+                    >
+                      <span className="flex flex-1 items-center gap-1.5">
+                        {nombre(t.de)}
+                        <ArrowRight size={18} className="text-accent" />
+                        <span className="sr-only">paga a</span>
+                        {nombre(t.a)}
+                      </span>
+                      <Euros cents={t.importe} className="font-semibold" />
+                    </m.li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </m.div>
+        </AnimatePresence>
       </div>
     </section>
   );

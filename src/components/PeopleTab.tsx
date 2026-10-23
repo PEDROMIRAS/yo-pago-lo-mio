@@ -1,11 +1,14 @@
-import { useState, type CSSProperties } from 'react';
+import { useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
+import { CaretRight, Plus, Users, X } from '@phosphor-icons/react';
 import type { Dinner } from '../types';
 import type { Act } from '../useDinner';
 import { addPerson, removePerson } from '../lib/dinner';
 import { shares } from '../lib/calc';
-import { formatEuros } from '../lib/money';
-import { Icon } from './Icon';
+import { item, itemExit } from '../motion';
 import { EmptyState } from './EmptyState';
+import { Euros } from './Euros';
 
 export function PeopleTab(props: { dinner: Dinner; act: Act; onPick: (personaId: string) => void; onReset: () => void }) {
   const { dinner, act, onPick, onReset } = props;
@@ -15,17 +18,26 @@ export function PeopleTab(props: { dinner: Dinner; act: Act; onPick: (personaId:
   return (
     <section>
       <form
-        className="field"
+        className="grid grid-cols-[minmax(0,1fr)] gap-2"
         onSubmit={e => {
           e.preventDefault();
           if (act(d => addPerson(d, nombre))) setNombre('');
         }}
       >
-        <label htmlFor="nombre">¿Quién está en la mesa?</label>
-        <div className="row">
-          <input id="nombre" placeholder="Nombre" value={nombre} onChange={e => setNombre(e.target.value)} autoComplete="off" />
-          <button type="submit">
-            <Icon name="plus" size={18} />
+        <label htmlFor="nombre" className="font-semibold">
+          ¿Quién está en la mesa?
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="nombre"
+            className="flex-1"
+            placeholder="Nombre"
+            value={nombre}
+            onChange={e => setNombre(e.target.value)}
+            autoComplete="off"
+          />
+          <button type="submit" className="btn btn-primary">
+            <Plus size={18} />
             Añadir
           </button>
         </div>
@@ -33,43 +45,56 @@ export function PeopleTab(props: { dinner: Dinner; act: Act; onPick: (personaId:
 
       {dinner.personas.length === 0 ? (
         <EmptyState
-          icon="users"
+          icon={Users}
           titulo="Aún no hay nadie"
           texto="Apunta a cada persona; luego toca su nombre para añadirle lo que pide."
         />
       ) : (
         <>
-          <p className="hint muted">Toca un nombre para apuntarle lo que pide.</p>
-          <ul className="rows">
-            {dinner.personas.map((p, i) => (
-              <li key={p.id} className="row" style={{ '--i': i } as CSSProperties}>
-                <button
-                  type="button"
-                  className="link grow row"
-                  aria-label={`Añadir platos para ${p.nombre}`}
-                  onClick={() => onPick(p.id)}
+          <p className="mt-4 mb-1 text-[0.95rem] text-muted">Toca un nombre para apuntarle lo que pide.</p>
+          <ul>
+            <AnimatePresence>
+              {dinner.personas.map((p, i) => (
+                <m.li
+                  key={p.id}
+                  layout
+                  variants={item}
+                  initial="hidden"
+                  animate="show"
+                  custom={i}
+                  exit={itemExit}
+                  className="flex min-h-13 items-center gap-2 border-b border-line"
                 >
-                  <span className="grow">{p.nombre}</span>
-                  <span>{formatEuros(cuotas[p.id] ?? 0)}</span>
-                  <span className="chevron">
-                    <Icon name="chevron" />
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="icon ghost"
-                  aria-label={`Quitar a ${p.nombre}`}
-                  onClick={() => act(d => removePerson(d, p.id))}
-                >
-                  <Icon name="x" size={18} />
-                </button>
-              </li>
-            ))}
+                  <button
+                    type="button"
+                    className="flex min-h-11 min-w-0 flex-1 items-center gap-2 text-left transition-transform duration-150 active:scale-[0.98]"
+                    aria-label={`Añadir platos para ${p.nombre}`}
+                    onClick={() => onPick(p.id)}
+                  >
+                    <span className="min-w-0 flex-1 truncate">{p.nombre}</span>
+                    <Euros cents={cuotas[p.id] ?? 0} />
+                    <CaretRight className="text-muted" />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-icon"
+                    aria-label={`Quitar a ${p.nombre}`}
+                    onClick={() => act(d => removePerson(d, p.id))}
+                  >
+                    <X size={18} />
+                  </button>
+                </m.li>
+              ))}
+            </AnimatePresence>
           </ul>
         </>
       )}
 
-      <button type="button" className="danger" onClick={() => confirm('¿Borrar esta cena y empezar otra?') && onReset()}>
+      <button
+        type="button"
+        className="btn mt-10 w-full border-error text-error"
+        onClick={() => confirm('¿Borrar esta cena y empezar otra?') && onReset()}
+      >
         Nueva cena
       </button>
     </section>

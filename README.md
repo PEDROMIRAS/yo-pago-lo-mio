@@ -2,7 +2,7 @@
 
 Calculadora para repartir la cuenta de una cena de grupo. Eliges el restaurante, apuntas quién está en la mesa y qué ha pedido cada uno (con raciones compartidas), y la app te dice cuánto le toca a cada persona y quién tiene que pagar a quién. También se puede pagar a partes iguales.
 
-Es una web estática (React + Vite) que se instala en el móvil y funciona sin conexión después de la primera visita, cartas incluidas.
+Es una web estática (React + Vite, estilos con Tailwind y animaciones con Motion) que se instala en el móvil y funciona sin conexión después de la primera visita, cartas incluidas.
 
 ## Desarrollo
 
