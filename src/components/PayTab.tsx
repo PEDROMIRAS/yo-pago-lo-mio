@@ -1,0 +1,98 @@
+import { useState } from 'react';
+import type { Dinner } from '../types';
+import type { Act } from '../useDinner';
+import { setModo, setPago } from '../lib/dinner';
+import { balances, payStatus, settle, shares } from '../lib/calc';
+import { formatEuros, parseEuros } from '../lib/money';
+import { ModeToggle } from './ModeToggle';
+
+const aTexto = (cents: number | undefined) => (cents ? (cents / 100).toFixed(2).replace('.', ',') : '');
+
+export function PayTab({ dinner, act }: { dinner: Dinner; act: Act }) {
+  // lo que se está escribiendo; solo pasa a la cena al salir del campo
+  const [textos, setTextos] = useState<Record<string, string>>(() =>
+    Object.fromEntries(dinner.personas.map(p => [p.id, aTexto(dinner.pagos[p.id])])),
+  );
+  const [malos, setMalos] = useState<Set<string>>(new Set());
+
+  const cuotas = shares(dinner);
+  const { total, diferencia } = payStatus(dinner);
+  const nombre = (id: string) => dinner.personas.find(p => p.id === id)?.nombre ?? '?';
+
+  const guardar = (id: string) => {
+    const cents = parseEuros(textos[id] ?? '');
+    setMalos(m => {
+      const n = new Set(m);
+      if (cents === null) n.add(id);
+      else n.delete(id);
+      return n;
+    });
+    if (cents !== null) act(d => setPago(d, id, cents));
+  };
+
+  const transferencias = diferencia === 0 && total > 0 ? settle(balances(dinner), dinner.personas.map(p => p.id)) : [];
+
+  return (
+    <section>
+      <ModeToggle modo={dinner.modo} onChange={m => act(d => setModo(d, m))} />
+
+      <ul className="list pay">
+        {dinner.personas.map(p => {
+          const malo = malos.has(p.id);
+          return (
+            <li key={p.id}>
+              <div className="row">
+                <div className="grow">
+                  <strong>{p.nombre}</strong>
+                  <div className="muted">le toca {formatEuros(cuotas[p.id] ?? 0)}</div>
+                </div>
+                <label className="paid">
+                  <span className="muted">ha puesto</span>
+                  <input
+                    inputMode="decimal"
+                    placeholder="0,00"
+                    aria-invalid={malo}
+                    aria-describedby={malo ? `err-${p.id}` : undefined}
+                    value={textos[p.id] ?? ''}
+                    onChange={e => setTextos(t => ({ ...t, [p.id]: e.target.value }))}
+                    onBlur={() => guardar(p.id)}
+                    onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                  />
+                </label>
+              </div>
+              {malo && (
+                <p id={`err-${p.id}`} className="error">
+                  Importe no válido
+                </p>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="status" aria-live="polite">
+        {diferencia < 0 && <p className="error">Faltan {formatEuros(-diferencia)}</p>}
+        {diferencia > 0 && <p className="error">Sobran {formatEuros(diferencia)}</p>}
+        {diferencia === 0 && total > 0 && (
+          transferencias.length === 0 ? (
+            <p>Cuentas cuadradas, nadie debe nada</p>
+          ) : (
+            <>
+              <h2>Quién paga a quién</h2>
+              <ul className="list">
+                {transferencias.map(t => (
+                  <li key={`${t.de}-${t.a}`} className="row">
+                    <span className="grow">
+                      {nombre(t.de)} → {nombre(t.a)}
+                    </span>
+                    <strong>{formatEuros(t.importe)}</strong>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        )}
+      </div>
+    </section>
+  );
+}

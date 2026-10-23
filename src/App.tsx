@@ -8,6 +8,7 @@ import { formatEuros } from './lib/money';
 import { PeopleTab } from './components/PeopleTab';
 import { MenuTab } from './components/MenuTab';
 import { SummaryTab } from './components/SummaryTab';
+import { PayTab } from './components/PayTab';
 
 type Tab = 'gente' | 'carta' | 'resumen' | 'pagar';
 const TABS: { id: Tab; label: string }[] = [
@@ -164,7 +165,7 @@ export default function App() {
         {tab === 'resumen' && (
           <SummaryTab dinner={dinner} menu={menu} act={act} error={error} clearError={clearError} />
         )}
-        {tab === 'pagar' && <p className="muted">Próximamente.</p>}
+        {tab === 'pagar' && <PayTab dinner={dinner} act={act} />}
       </main>
 
       <nav className="tabs">

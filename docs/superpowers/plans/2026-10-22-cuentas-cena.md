@@ -658,14 +658,14 @@ git commit -m "feat: resumen por producto, bloques de reparto y personas"
 - Consumes: `parseEuros`, `formatEuros`, `setPago`, `setModo`, `ModeToggle`, `payStatus`, `balances`, `settle`, `shares`.
 - Produces: `PayTab({ dinner, act })`
 
-- [ ] **Step 1: Implementar `PayTab`**
+- [x] **Step 1: Implementar `PayTab`**
 
 `ModeToggle` arriba (el mismo modo que en Resumen). Por persona: nombre, “le toca X €” (`shares`, ya según el modo) y un `<input inputMode="decimal">` “ha puesto”. El texto se guarda en estado local del componente mientras se escribe; en `onBlur` se pasa por `parseEuros`: `null` → borde rojo y “Importe no válido” sin tocar la cena; si no, `act(d => setPago(d, id, cents))`. Debajo, con `payStatus`:
 - `diferencia < 0` → “Faltan {formatEuros(-diferencia)}”.
 - `diferencia > 0` → “Sobran {formatEuros(diferencia)}”.
 - `diferencia === 0` y `total > 0` → lista de `settle(balances(d), d.personas.map(p => p.id))` como “Bea → Ana · 13,75 €”. Si sale vacía, “Cuentas cuadradas, nadie debe nada”.
 
-- [ ] **Step 2: Verificar en el navegador**
+- [x] **Step 2: Verificar en el navegador**
 
 Con la cena del Task 7 (antes de editar), total 11,10 €:
 - Ana pone `5` → “Faltan 6,10 €” y ninguna transferencia.
@@ -674,7 +674,7 @@ Con la cena del Task 7 (antes de editar), total 11,10 €:
 - Cambiar a A partes iguales → “le toca” pasa a 3,70 € para los tres y las transferencias se recalculan; los importes puestos no cambian.
 - Recargar → **Continuar** → los importes y el modo siguen ahí.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add -A
