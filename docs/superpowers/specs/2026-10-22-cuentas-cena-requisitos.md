@@ -64,7 +64,9 @@ uno y quién tiene que pagar a quién para cuadrar.
    y tildes; busca en nombre y categoría). Al pulsar un producto se abre un
    formulario:
    - **Cantidad** (entero ≥ 1).
-   - **Personas** que lo comparten (casillas + botón “Todos”). Al menos una.
+   - **Personas** que lo comparten (casillas + botón “Todos”). Al menos una. Cada
+     persona que se marca suma uno a la cantidad y desmarcarla lo resta (nunca baja
+     de 1). Al editar una línea ya pedida, marcar gente no cambia la cantidad.
    - Aceptar → se añade una **línea de pedido**. Si esas mismas personas ya tienen
      ese plato (al mismo precio), se suma a su cantidad en vez de crear otra línea.
 4. **Añadir desde una persona**: al tocar a una persona, la carta queda “a nombre de”

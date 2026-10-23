@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { createDinner, addPerson, removePerson, addLine, updateLine, removeLine, addPersonToLines, setPago, setModo, pagaTodo, trasCambio } from './dinner';
+import { createDinner, addPerson, removePerson, addLine, updateLine, removeLine, addPersonToLines, setPago, setModo, pagaTodo, trasCambio, cantidadAlMarcar } from './dinner';
 
 const base = () => addPerson(addPerson(createDinner('padillas'), 'Ana'), 'Bea'); // ids p1, p2
 
@@ -74,4 +74,13 @@ test('trasCambio: borrar se puede deshacer; cualquier otro cambio anula el desha
   expect(trasCambio(borrado, removeLine(antes, 'l3'))).toBeNull();
   // un segundo borrado sustituye al primero con otro número, para que el aviso vuelva a salir
   expect(trasCambio(borrado, antes, 'Quitaste a Bea')?.n).toBe(2);
+});
+
+test('cantidadAlMarcar: cada persona marcada suma uno, desmarcar resta, nunca menos de 1', () => {
+  expect(cantidadAlMarcar(1, 0, 1)).toBe(1); // la primera ya cuenta en el 1 inicial
+  expect(cantidadAlMarcar(1, 1, 2)).toBe(2);
+  expect(cantidadAlMarcar(2, 2, 1)).toBe(1);
+  expect(cantidadAlMarcar(1, 1, 0)).toBe(1);
+  expect(cantidadAlMarcar(1, 0, 4)).toBe(4); // botón Todos con 4 personas
+  expect(cantidadAlMarcar(5, 2, 3)).toBe(6); // lo subido a mano con + se conserva
 });

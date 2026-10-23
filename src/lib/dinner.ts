@@ -34,6 +34,13 @@ function checkLine(d: Dinner, l: Pick<Linea, 'cantidad' | 'personas'>): void {
   if (l.personas.length === 0 || !l.personas.every(p => ids.has(p))) throw new Error('Elige al menos una persona');
 }
 
+/**
+ * Al marcar gente en el formulario de pedido, cada persona suma uno a la cantidad y desmarcarla lo resta.
+ * La primera ya cuenta en el 1 inicial, y nunca baja de 1; lo ajustado a mano con +/- se conserva.
+ */
+export const cantidadAlMarcar = (cantidad: number, antes: number, ahora: number) =>
+  Math.max(1, cantidad + Math.max(1, ahora) - Math.max(1, antes));
+
 const mismoGrupo = (a: string[], b: string[]) => a.length === b.length && a.every(id => b.includes(id));
 
 /** Si ese grupo ya tiene el mismo plato (y al mismo precio), se suma a su cantidad en vez de crear otra línea. */

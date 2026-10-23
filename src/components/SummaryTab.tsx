@@ -171,6 +171,7 @@ export function SummaryTab(props: {
             : { cantidad: 1, personas: edicion?.tipo === 'nueva' ? edicion.personas : [] }
         }
         error={error}
+        porPersona={edicion?.tipo === 'nueva'}
         onAccept={({ cantidad, personas, otraMitad }) => {
           const ok =
             edicion?.tipo === 'editar'

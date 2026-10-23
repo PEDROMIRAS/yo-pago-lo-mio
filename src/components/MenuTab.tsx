@@ -92,6 +92,7 @@ export function MenuTab(props: {
         // sin nadie marcado: cada pedido es de un grupo distinto (salvo si se entra desde una persona)
         inicial={{ cantidad: 1, personas: activa ? [activa.id] : [] }}
         error={error}
+        porPersona
         onAccept={({ cantidad, personas, otraMitad }) => {
           if (!item) return;
           let producto = item.nombre;

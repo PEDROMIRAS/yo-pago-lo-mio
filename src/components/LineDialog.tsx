@@ -4,6 +4,7 @@ import * as m from 'motion/react-m';
 import { Minus, Plus } from '@phosphor-icons/react';
 import type { MenuItem, Persona } from '../types';
 import { formatEuros } from '../lib/money';
+import { cantidadAlMarcar } from '../lib/dinner';
 import { Modal } from './Modal';
 
 type Valor = { cantidad: number; personas: string[]; otraMitad?: string };
@@ -18,6 +19,7 @@ type Props = {
   error?: string | null; // el aviso general queda tapado por el modal
   onAccept: (v: Valor) => void;
   onClose: () => void;
+  porPersona?: boolean; // al pedir (no al editar): cada persona marcada suma uno a la cantidad
   children?: ReactNode; // debajo del formulario, en la misma hoja
 };
 
@@ -32,7 +34,7 @@ export function LineDialog({ open, children, ...rest }: Props) {
 }
 
 function LineForm(props: Omit<Props, 'open' | 'children'>) {
-  const { titulo, descripcion, mitades, personas, inicial, error, onAccept, onClose } = props;
+  const { titulo, descripcion, mitades, personas, inicial, error, onAccept, onClose, porPersona } = props;
   const [cantidad, setCantidad] = useState(inicial.cantidad);
   const [sube, setSube] = useState(true);
   const [marcadas, setMarcadas] = useState(inicial.personas);
@@ -40,9 +42,16 @@ function LineForm(props: Omit<Props, 'open' | 'children'>) {
   const otra = mitades?.opciones.find(o => o.nombre === otraMitad);
 
   const todas = marcadas.length === personas.length;
+  const marcar = (nuevas: string[]) => {
+    if (porPersona && nuevas.length !== marcadas.length) {
+      setSube(nuevas.length > marcadas.length);
+      setCantidad(c => cantidadAlMarcar(c, marcadas.length, nuevas.length));
+    }
+    setMarcadas(nuevas);
+  };
   // mantener el orden de la mesa, no el orden en que se marcaron
   const toggle = (id: string) =>
-    setMarcadas(prev => personas.map(p => p.id).filter(x => (x === id ? !prev.includes(id) : prev.includes(x))));
+    marcar(personas.map(p => p.id).filter(x => (x === id ? !marcadas.includes(id) : marcadas.includes(x))));
   const cambiar = (d: number) => {
     setSube(d > 0);
     setCantidad(c => Math.max(1, c + d));
@@ -106,7 +115,7 @@ function LineForm(props: Omit<Props, 'open' | 'children'>) {
 
       <fieldset className="my-4 grid gap-0.5 rounded-box border border-line px-3 py-2">
         <legend className="px-1 font-semibold">¿Quién lo comparte?</legend>
-        <button type="button" className="btn" onClick={() => setMarcadas(todas ? [] : personas.map(p => p.id))}>
+        <button type="button" className="btn" onClick={() => marcar(todas ? [] : personas.map(p => p.id))}>
           {todas ? 'Ninguno' : 'Todos'}
         </button>
         {personas.map(p => (
