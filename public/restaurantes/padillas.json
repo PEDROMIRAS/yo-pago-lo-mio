@@ -15,7 +15,7 @@
     { "categoria": "Tapas", "nombre": "Patatas con ajo", "precio": 1.2 },
     { "categoria": "Tapas", "nombre": "Patatas a cantones", "precio": 2.1 },
     { "categoria": "Tapas", "nombre": "Plato de ajo", "precio": 1.6 },
-    { "categoria": "Tapas", "nombre": "Pollo al ast", "precio": 14.5 },
+    { "categoria": "Tapas", "nombre": "Pollo Al'Ast", "precio": 14.5 },
     { "categoria": "Tapas", "nombre": "Conejo al ajillo", "precio": 19 },
     { "categoria": "Tapas", "nombre": "Pan", "precio": 1 },
     { "categoria": "Tapas", "nombre": "Ensalada", "precio": 4.2 },
