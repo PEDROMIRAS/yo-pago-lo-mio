@@ -75,7 +75,12 @@
   h1,
   h2,
   h3 {
-    @apply leading-tight tracking-tight;
+    @apply leading-tight tracking-tight text-balance;
+  }
+
+  /* sin palabras sueltas en la última línea */
+  p {
+    @apply text-pretty;
   }
 
   input:not([type='checkbox']),

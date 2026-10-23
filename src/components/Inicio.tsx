@@ -20,7 +20,7 @@ export function Inicio({ guardada, onContinuar, onNueva }: { guardada: CenaGuard
       <m.header variants={item} initial="hidden" animate="show" custom={i++} className="grid gap-3">
         <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" width={56} height={56} className="rounded-box shadow-soft" />
         <h1 className="text-4xl font-bold">Yo pago lo mío</h1>
-        <p className="max-w-[34ch] text-lg text-muted">Reparte la cuenta de la cena sin hacer cuentas a mano.</p>
+        <p className="max-w-[34ch] text-lg text-muted">Reparte la cuenta de la cena: cada uno paga lo que ha pedido.</p>
       </m.header>
 
       {guardada && (
