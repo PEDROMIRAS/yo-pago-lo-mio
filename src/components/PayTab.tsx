@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
-import { ArrowRight, Check, CheckCircle, ShareNetwork, Wallet } from '@phosphor-icons/react';
+import { ArrowRight, Check, CheckCircle, ShareNetwork, TelegramLogo, Wallet, WhatsappLogo } from '@phosphor-icons/react';
 import type { Dinner } from '../types';
 import type { Act } from '../useDinner';
 import { nombreDe, pagaTodo, setModo, setPago } from '../lib/dinner';
@@ -55,12 +55,15 @@ export function PayTab(props: { dinner: Dinner; act: Act; restaurante: string; o
     if (cents !== null) act(d => setPago(d, id, cents));
   };
 
+  const text = textoCuentas(dinner, restaurante);
+  const url = new URL(import.meta.env.BASE_URL, location.origin).href;
+
   // el menú de compartir del móvil (WhatsApp...); donde no existe, se copia al portapapeles
   const compartir = async () => {
-    const text = textoCuentas(dinner, restaurante);
     if (navigator.share) {
       try {
-        return await navigator.share({ text });
+        // con url: Telegram en Android se abría y cerraba sin enviar cuando solo llegaba texto
+        return await navigator.share({ text, url });
       } catch (e) {
         if (e instanceof DOMException && e.name === 'AbortError') return; // lo cerró el usuario
       }
@@ -195,6 +198,22 @@ export function PayTab(props: { dinner: Dinner; act: Act; restaurante: string; o
               {copiado ? <Check size={20} /> : <ShareNetwork size={20} />}
               {copiado ? 'Copiado, pégalo en el grupo' : 'Compartir con el grupo'}
             </button>
+            {/* enlaces directos: no dependen del menú de compartir del móvil */}
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <a className="btn" href={`https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`} target="_blank" rel="noopener noreferrer">
+                <WhatsappLogo size={20} />
+                WhatsApp
+              </a>
+              <a
+                className="btn"
+                href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <TelegramLogo size={20} />
+                Telegram
+              </a>
+            </div>
           </m.div>
         )}
       </AnimatePresence>
