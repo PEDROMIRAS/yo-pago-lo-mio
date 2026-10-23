@@ -53,7 +53,7 @@ export function PeopleTab(props: { dinner: Dinner; act: Act; onPick: (personaId:
         />
       ) : (
         <>
-          <p className="mt-4 mb-1 text-[0.95rem] text-muted">Toca un nombre para apuntarle lo que pide.</p>
+          <p className="mt-4 mb-1 text-small text-muted">Toca un nombre para apuntarle lo que pide.</p>
           <ul>
             <AnimatePresence>
               {dinner.personas.map((p, i) => (

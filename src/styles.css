@@ -53,7 +53,11 @@
   --color-accent-fg: var(--accent-fg);
   --color-error: var(--error);
   --color-warn: var(--warn);
+  --color-scrim: rgb(10 12 15 / 0.5); /* fondo tras las hojas */
   --shadow-soft: var(--shadow);
+  /* texto secundario: entre text-sm y text-base, legible en la mesa */
+  --text-small: 0.9375rem;
+  --text-small--line-height: 1.4;
   /* radios: controles 12, contenedores 16, pastillas solo en chips, contadores y el stepper */
   --radius-control: 12px;
   --radius-box: 16px;

@@ -75,12 +75,12 @@ export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; on
                     le toca <Euros cents={cuotas[p.id] ?? 0} />
                   </div>
                   {total > 0 && dinner.pagos[p.id] !== total && (
-                    <button type="button" className="btn mt-1.5 min-h-9 px-3 text-[0.9rem]" onClick={() => pagoTodo(p.id)}>
+                    <button type="button" className="btn mt-1.5 min-h-9 px-3 text-small" onClick={() => pagoTodo(p.id)}>
                       Pagó todo
                     </button>
                   )}
                 </div>
-                <label className="grid justify-items-end gap-1 text-[0.85rem]">
+                <label className="grid justify-items-end gap-1 text-sm">
                   <span className="text-muted">ha puesto</span>
                   <input
                     inputMode="decimal"

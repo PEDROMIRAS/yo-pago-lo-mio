@@ -30,7 +30,7 @@ export function Modal({ open, onClose, label, children }: { open: boolean; onClo
         {open && (
           <div key="sheet" className="fixed inset-0 flex items-end justify-center">
             <m.div
-              className="absolute inset-0 bg-[rgb(10_12_15/0.5)]"
+              className="absolute inset-0 bg-scrim"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.2 } }}
               exit={{ opacity: 0, transition: exitFast }}

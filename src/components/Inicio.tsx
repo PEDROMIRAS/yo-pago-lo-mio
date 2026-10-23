@@ -38,7 +38,7 @@ export function Inicio({ guardada, onContinuar, onNueva }: { guardada: CenaGuard
             </span>
             <div className="min-w-0">
               <p className="font-semibold">Cena en {guardada.restaurante}</p>
-              <p className="text-[0.95rem] text-muted">
+              <p className="text-small text-muted">
                 {guardada.personas} {guardada.personas === 1 ? 'persona' : 'personas'}, guardada a las {guardada.hora}
               </p>
             </div>
@@ -74,7 +74,7 @@ export function Inicio({ guardada, onContinuar, onNueva }: { guardada: CenaGuard
               </span>
               <div>
                 <p className="font-semibold">{p.titulo}</p>
-                <p className="text-[0.95rem] text-muted">{p.texto}</p>
+                <p className="text-small text-muted">{p.texto}</p>
               </div>
             </m.li>
           ))}
@@ -108,7 +108,7 @@ export function Restaurantes(props: {
           </button>
         </>
       ) : !restaurantes ? (
-        <Skeleton filas={2} alto={60} />
+        <Skeleton filas={2} alto="h-15" />
       ) : (
         <ul className="grid gap-2.5">
           {restaurantes.map((r, i) => (

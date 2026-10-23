@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
-import { Plus, Receipt, X } from '@phosphor-icons/react';
+import { Receipt, X } from '@phosphor-icons/react';
 import type { Dinner, Linea, Menu, MenuItem } from '../types';
 import type { Act } from '../useDinner';
-import { addLine, addPersonToLines, removeLine, setModo, updateLine } from '../lib/dinner';
+import { addLine, setModo, updateLine } from '../lib/dinner';
 import { blocks, breakdown, itemTotals, payStatus, shares } from '../lib/calc';
 import { formatEuros } from '../lib/money';
-import { exitFast, item, itemExit } from '../motion';
+import { exitFast, item } from '../motion';
 import { LineDialog } from './LineDialog';
 import { MenuList } from './MenuList';
 import { Modal } from './Modal';
 import { ModeToggle } from './ModeToggle';
 import { EmptyState } from './EmptyState';
 import { Euros } from './Euros';
+import { BlockCard } from './BlockCard';
 
 type Edicion =
   | { tipo: 'editar'; linea: Linea }
@@ -46,7 +47,6 @@ export function SummaryTab(props: {
     );
   }
 
-  const nombre = (id: string) => dinner.personas.find(p => p.id === id)?.nombre ?? '?';
   const { total } = payStatus(dinner);
   const cuotas = shares(dinner);
   const desglose = breakdown(dinner);
@@ -78,7 +78,7 @@ export function SummaryTab(props: {
             <AnimatePresence initial={false}>
               {dinner.modo === 'consumo' && (
                 <m.div
-                  className="overflow-hidden text-[0.95rem] text-muted"
+                  className="overflow-hidden text-small text-muted"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0, transition: exitFast }}
@@ -107,80 +107,16 @@ export function SummaryTab(props: {
 
       <h2 className={h2}>Compartido entre…</h2>
       <AnimatePresence initial={false} mode="popLayout">
-        {blocks(dinner).map(b => {
-          const partes = Object.values(b.cuotas);
-          const min = Math.min(...partes);
-          const max = Math.max(...partes);
-          const fuera = dinner.personas.filter(p => !b.personas.includes(p.id));
-          return (
-            <m.article
-              key={b.personas.join()}
-              layout
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.97, transition: exitFast }}
-              className="mb-3 rounded-box border border-line bg-surface px-4 pt-3.5 pb-3"
-            >
-              <div className={fila}>
-                <h3 className="flex-1 font-semibold">{b.personas.map(nombre).join(' + ')}</h3>
-                <Euros cents={b.total} className="font-semibold" />
-              </div>
-              {b.personas.length > 1 && (
-                <p className="mt-0.5 text-[0.95rem] text-muted">
-                  {min === max ? formatEuros(min) : `${formatEuros(min).replace(/\s*€/, '')}-${formatEuros(max)}`} cada uno
-                </p>
-              )}
-              <ul className="mt-2">
-                <AnimatePresence initial={false}>
-                  {b.lineas.map(l => (
-                    <m.li
-                      key={l.id}
-                      layout="position"
-                      exit={itemExit}
-                      className={`${fila} min-h-13 border-b border-line py-1.5 last:border-b-0`}
-                    >
-                      <span className="flex-1">
-                        {l.cantidad} × {l.producto} · {formatEuros(l.precio * l.cantidad)}
-                      </span>
-                      <button type="button" className="btn" onClick={() => abrir({ tipo: 'editar', linea: l })}>
-                        Editar
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-icon"
-                        aria-label={`Borrar ${l.producto}`}
-                        onClick={() => act(d => removeLine(d, l.id))}
-                      >
-                        <X size={18} />
-                      </button>
-                    </m.li>
-                  ))}
-                </AnimatePresence>
-              </ul>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {fuera.length > 0 && (
-                  <select
-                    className="min-w-35 flex-1"
-                    aria-label="Añadir persona a lo compartido"
-                    value=""
-                    onChange={e => act(d => addPersonToLines(d, b.lineas.map(l => l.id), e.target.value))}
-                  >
-                    <option value="">Añadir a…</option>
-                    {fuera.map(p => (
-                      <option key={p.id} value={p.id}>
-                        {p.nombre}
-                      </option>
-                    ))}
-                  </select>
-                )}
-                <button type="button" className="btn min-w-35 flex-1" onClick={() => abrir({ tipo: 'elegir', personas: b.personas })}>
-                  <Plus size={18} />
-                  Producto
-                </button>
-              </div>
-            </m.article>
-          );
-        })}
+        {blocks(dinner).map(b => (
+          <BlockCard
+            key={b.personas.join()}
+            block={b}
+            personas={dinner.personas}
+            act={act}
+            onEdit={linea => abrir({ tipo: 'editar', linea })}
+            onAddProduct={personas => abrir({ tipo: 'elegir', personas })}
+          />
+        ))}
       </AnimatePresence>
 
       <m.div layout="position">

@@ -66,7 +66,7 @@ export function MenuList(props: { menu: Menu; pedidos: Map<string, number>; onPi
                   key={cat}
                   type="button"
                   aria-current={on}
-                  className={`relative min-h-9.5 flex-none rounded-full border px-3.5 text-[0.95rem] transition-colors duration-200 ${on ? 'border-accent text-accent-fg' : 'border-line bg-surface'}`}
+                  className={`relative min-h-9.5 flex-none rounded-full border px-3.5 text-small transition-colors duration-200 ${on ? 'border-accent text-accent-fg' : 'border-line bg-surface'}`}
                   onClick={() => document.getElementById(anchor(cat))?.scrollIntoView({ behavior: 'smooth' })}
                 >
                   {on && <m.span layoutId={`chip-${uid}`} className="absolute inset-0 rounded-full bg-accent" />}
@@ -86,7 +86,7 @@ export function MenuList(props: { menu: Menu; pedidos: Map<string, number>; onPi
           <h2
             id={anchor(categoria)}
             data-cat={categoria}
-            className="mt-6 scroll-mt-44 text-[0.8rem] font-semibold tracking-[0.06em] text-muted uppercase"
+            className="mt-6 scroll-mt-44 text-xs font-semibold tracking-[0.06em] text-muted uppercase"
           >
             {categoria}
           </h2>
@@ -105,7 +105,7 @@ export function MenuList(props: { menu: Menu; pedidos: Map<string, number>; onPi
                       // key={n}: cada plato añadido hace rebotar el contador
                       <m.span
                         key={n}
-                        className="rounded-full bg-accent px-2 py-px text-[0.82rem] font-semibold text-accent-fg"
+                        className="rounded-full bg-accent px-2 py-px text-xs font-semibold text-accent-fg"
                         aria-label={`${n} pedidos`}
                         initial={{ scale: 0.5, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
