@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { createDinner, addPerson, removePerson, addLine, updateLine, removeLine, addPersonToLines, setPago, setModo } from './dinner';
+import { createDinner, addPerson, removePerson, addLine, updateLine, removeLine, addPersonToLines, setPago, setModo, pagaTodo, nombreDe } from './dinner';
 
 const base = () => addPerson(addPerson(createDinner('padillas'), 'Ana'), 'Bea'); // ids p1, p2
 
@@ -46,4 +46,16 @@ test('modo por defecto consumo; setModo lo cambia sin tocar pedido ni pagos', ()
   expect(e.modo).toBe('igual');
   expect(e.lineas).toEqual(d.lineas);
   expect(e.pagos).toEqual(d.pagos);
+});
+
+test('pagaTodo pone el total en una persona y borra lo que habían puesto las demás', () => {
+  let d = addLine(base(), { producto: 'Caña', precio: 200, cantidad: 3, personas: ['p1', 'p2'] });
+  d = setPago(setPago(d, 'p1', 100), 'p2', 250);
+  expect(pagaTodo(d, 'p2').pagos).toEqual({ p2: 600 });
+  expect(() => pagaTodo(d, 'p99')).toThrow(/persona/);
+});
+
+test('nombreDe da el nombre o ? si la persona no existe', () => {
+  expect(nombreDe(base(), 'p2')).toBe('Bea');
+  expect(nombreDe(base(), 'p99')).toBe('?');
 });

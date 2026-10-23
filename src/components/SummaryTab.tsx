@@ -111,7 +111,7 @@ export function SummaryTab(props: {
           <BlockCard
             key={b.personas.join()}
             block={b}
-            personas={dinner.personas}
+            dinner={dinner}
             act={act}
             onEdit={linea => abrir({ tipo: 'editar', linea })}
             onAddProduct={personas => abrir({ tipo: 'elegir', personas })}

@@ -4,7 +4,7 @@ import * as m from 'motion/react-m';
 import { ArrowRight, CheckCircle, Wallet } from '@phosphor-icons/react';
 import type { Dinner } from '../types';
 import type { Act } from '../useDinner';
-import { setModo, setPago } from '../lib/dinner';
+import { nombreDe, pagaTodo, setModo, setPago } from '../lib/dinner';
 import { balances, payStatus, settle, shares } from '../lib/calc';
 import { formatEuros, parseEuros } from '../lib/money';
 import { exitFast, item } from '../motion';
@@ -39,9 +39,8 @@ export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; on
   const pagoTodo = (id: string) => {
     setTextos(Object.fromEntries(dinner.personas.map(p => [p.id, p.id === id ? aTexto(total) : ''])));
     setMalos(new Set());
-    act(d => d.personas.reduce((acc, p) => setPago(acc, p.id, p.id === id ? total : 0), d));
+    act(d => pagaTodo(d, id));
   };
-  const nombre = (id: string) => dinner.personas.find(p => p.id === id)?.nombre ?? '?';
 
   const guardar = (id: string) => {
     const cents = parseEuros(textos[id] ?? '');
@@ -153,10 +152,10 @@ export function PayTab({ dinner, act, onGoMenu }: { dinner: Dinner; act: Act; on
                       className="flex min-h-13 items-center gap-2 border-b border-line"
                     >
                       <span className="flex flex-1 items-center gap-1.5">
-                        {nombre(t.de)}
+                        {nombreDe(dinner, t.de)}
                         <ArrowRight size={18} className="text-accent" />
                         <span className="sr-only">paga a</span>
-                        {nombre(t.a)}
+                        {nombreDe(dinner, t.a)}
                       </span>
                       <Euros cents={t.importe} className="font-semibold" />
                     </m.li>

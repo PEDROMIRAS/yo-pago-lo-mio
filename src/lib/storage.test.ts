@@ -9,7 +9,7 @@ const fake = () => {
 
 test('guarda y recupera', () => {
   const s = fake();
-  saveSession(s, createDinner('padillas'), 123);
+  expect(saveSession(s, createDinner('padillas'), 123)).toBe(true);
   expect(loadSession(s)).toEqual({ dinner: createDinner('padillas'), guardado: 123 });
   clearSession(s);
   expect(loadSession(s)).toBeNull();
@@ -28,9 +28,9 @@ test('ignora JSON corrupto, otra versión o forma rara', () => {
 test('storage que lanza no rompe nada', () => {
   const boom = { getItem: () => { throw new Error('x'); }, setItem: () => { throw new Error('x'); }, removeItem: () => { throw new Error('x'); } };
   expect(loadSession(boom)).toBeNull();
-  expect(() => saveSession(boom, createDinner('x'))).not.toThrow();
+  expect(saveSession(boom, createDinner('x'))).toBe(false);
   expect(() => clearSession(boom)).not.toThrow();
   expect(loadSession(null)).toBeNull();
-  expect(() => saveSession(null, createDinner('x'))).not.toThrow();
+  expect(saveSession(null, createDinner('x'))).toBe(false);
   expect(() => clearSession(null)).not.toThrow();
 });

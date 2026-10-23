@@ -6,12 +6,16 @@ import { browserStorage, clearSession, saveSession } from './lib/storage';
 
 export type Act = (fn: (d: Dinner) => Dinner) => boolean;
 
+const SIN_GUARDAR = 'Este navegador no deja guardar la cena: no cierres la pestaña hasta terminar.';
+
 export function useDinner() {
   const [dinner, setDinnerState] = useState<Dinner | null>(null);
   const [menu, setMenu] = useState<Menu | null>(null);
   const [error, setError] = useState<string | null>(null);
   // el ref deja que dos `act` seguidos en el mismo evento vean el estado del anterior
   const ref = useRef<Dinner | null>(null);
+  // el aviso de "no se guarda" sale una vez, no en cada cambio
+  const avisado = useRef(false);
 
   const setDinner = (d: Dinner | null) => {
     ref.current = d;
@@ -23,8 +27,9 @@ export function useDinner() {
     try {
       const next = fn(ref.current);
       setDinner(next);
-      setError(null);
-      saveSession(browserStorage, next);
+      const guardado = saveSession(browserStorage, next);
+      setError(guardado || avisado.current ? null : SIN_GUARDAR);
+      if (!guardado) avisado.current = true;
       return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -45,6 +50,7 @@ export function useDinner() {
 
   const start = useCallback(async (restauranteId: string) => {
     const d = createDinner(restauranteId);
+    // si no se puede guardar, avisa la primera acción (aquí taparía un posible error de la carta)
     saveSession(browserStorage, d);
     await resume(d);
   }, [resume]);

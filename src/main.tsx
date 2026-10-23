@@ -7,7 +7,9 @@ import App from './App.tsx'
 import { spring } from './motion'
 import { registerSW } from 'virtual:pwa-register'
 
-registerSW({ immediate: true })
+// Sin recarga al activarse una versión nueva: sacaría de la cena a quien la está usando.
+// La nueva se usa al volver a abrir; es seguro porque todo el JS va en un solo bundle.
+registerSW({ immediate: true, onNeedReload() {} })
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

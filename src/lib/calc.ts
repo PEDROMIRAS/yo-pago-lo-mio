@@ -2,7 +2,7 @@ import type { Dinner, Linea } from '../types';
 import { splitCents } from './money';
 
 export type Block = { personas: string[]; lineas: Linea[]; total: number; cuotas: Record<string, number> };
-export type Transfer = { de: string; a: string; importe: number };
+type Transfer = { de: string; a: string; importe: number };
 
 const lineTotal = (l: Linea) => l.precio * l.cantidad;
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);

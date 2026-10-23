@@ -1,5 +1,5 @@
-import { expect, test } from 'vitest';
-import { normalizeMenu, matchesQuery } from './menu';
+import { afterEach, expect, test, vi } from 'vitest';
+import { normalizeMenu, matchesQuery, loadMenu } from './menu';
 
 test('normalizeMenu pasa precios a céntimos sin errores de float', () => {
   const m = normalizeMenu({ nombre: 'X', carta: [{ categoria: 'Raciones', nombre: 'Morcilla', precio: 6.1 }] });
@@ -33,4 +33,17 @@ test('todas las cartas de index.json existen y cargan', () => {
     expect(json, `falta ${id}.json`).toBeDefined();
     normalizeMenu(json);
   }
+});
+
+afterEach(() => vi.unstubAllGlobals());
+
+test('loadMenu da un error legible si llega HTML en vez de la carta (id inexistente)', async () => {
+  // el servidor de Vite y el service worker devuelven index.html con 200
+  vi.stubGlobal('fetch', async () => new Response('<!doctype html><html></html>', { status: 200 }));
+  await expect(loadMenu('no-existe')).rejects.toThrow('No se pudo cargar la carta');
+});
+
+test('loadMenu da el mismo error si la respuesta es 404', async () => {
+  vi.stubGlobal('fetch', async () => new Response('', { status: 404 }));
+  await expect(loadMenu('no-existe')).rejects.toThrow('No se pudo cargar la carta');
 });

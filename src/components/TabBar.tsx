@@ -1,14 +1,5 @@
 import * as m from 'motion/react-m';
-import { List, Receipt, Users, Wallet, type Icon } from '@phosphor-icons/react';
-import type { Tab } from '../tabs';
-
-// mismo orden que TAB_IDS
-const TABS: { id: Tab; label: string; icon: Icon }[] = [
-  { id: 'gente', label: 'Gente', icon: Users },
-  { id: 'carta', label: 'Carta', icon: List },
-  { id: 'resumen', label: 'Resumen', icon: Receipt },
-  { id: 'pagar', label: 'Pagar', icon: Wallet },
-];
+import { TABS, type Tab } from '../tabs';
 
 export function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
   return (

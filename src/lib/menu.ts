@@ -4,7 +4,7 @@ export function normalizeText(s: string): string {
   return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 }
 
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
+export const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
 /** Valida el JSON de una carta y pasa los precios de euros a céntimos. */
 export function normalizeMenu(json: unknown): Menu {

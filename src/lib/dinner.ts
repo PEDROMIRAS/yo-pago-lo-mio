@@ -1,5 +1,6 @@
 import type { Dinner, Linea, Modo } from '../types';
 import { normalizeText } from './menu';
+import { payStatus } from './calc';
 
 export function createDinner(restauranteId: string): Dinner {
   return { restauranteId, personas: [], lineas: [], pagos: {}, modo: 'consumo', nextId: 1 };
@@ -69,3 +70,11 @@ export function setPago(d: Dinner, personaId: string, cents: number): Dinner {
   const { [personaId]: _, ...pagos } = d.pagos;
   return { ...d, pagos: cents === 0 ? pagos : { ...pagos, [personaId]: cents } };
 }
+
+/** Una persona paga la cuenta entera: el total es suyo y lo que pusieron las demás se borra. */
+export function pagaTodo(d: Dinner, personaId: string): Dinner {
+  if (!d.personas.some(p => p.id === personaId)) throw new Error('Elige al menos una persona');
+  return setPago({ ...d, pagos: {} }, personaId, payStatus(d).total);
+}
+
+export const nombreDe = (d: Dinner, id: string) => d.personas.find(p => p.id === id)?.nombre ?? '?';

@@ -4,7 +4,7 @@ import * as m from 'motion/react-m';
 import { CheckCircle, Users, X } from '@phosphor-icons/react';
 import type { Dinner, Menu, MenuItem } from '../types';
 import type { Act } from '../useDinner';
-import { addLine } from '../lib/dinner';
+import { addLine, nombreDe } from '../lib/dinner';
 import { itemTotals } from '../lib/calc';
 import { formatEuros } from '../lib/money';
 import { exitFast } from '../motion';
@@ -49,7 +49,7 @@ export function MenuTab(props: {
   const activa = dinner.personas.find(p => p.id === activePersona);
   const existentes = new Set(dinner.personas.map(p => p.id));
   const pedidos = new Map(itemTotals(dinner).map(i => [i.producto, i.cantidad]));
-  const nombres = (ids: string[]) => dinner.personas.filter(p => ids.includes(p.id)).map(p => p.nombre).join(', ');
+
 
   return (
     <section>
@@ -92,7 +92,7 @@ export function MenuTab(props: {
         onAccept={({ cantidad, personas }) => {
           if (item && act(d => addLine(d, { producto: item.nombre, precio: item.precio, cantidad, personas }))) {
             if (!activa) setUltimas(personas);
-            setHecho(h => ({ n: (h?.n ?? 0) + 1, texto: `Añadido: ${cantidad} × ${item.nombre} · ${nombres(personas)}` }));
+            setHecho(h => ({ n: (h?.n ?? 0) + 1, texto: `Añadido: ${cantidad} × ${item.nombre} · ${personas.map(id => nombreDe(dinner, id)).join(', ')}` }));
             setItem(null);
           }
         }}

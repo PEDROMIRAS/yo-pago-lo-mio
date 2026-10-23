@@ -1,4 +1,5 @@
 import type { Dinner } from '../types';
+import { isRecord } from './menu';
 
 const KEY = 'cuentas-cena';
 const VERSION = 1;
@@ -11,8 +12,6 @@ export const browserStorage: Storage | null = (() => {
     return null;
   }
 })();
-
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
 function isDinner(v: unknown): v is Dinner {
   return (
@@ -40,11 +39,14 @@ export function loadSession(storage: Pick<Storage, 'getItem'> | null): { dinner:
   }
 }
 
-export function saveSession(storage: Pick<Storage, 'setItem'> | null, dinner: Dinner, now = Date.now()): void {
+/** false si no se pudo guardar (sin almacenamiento, lleno o bloqueado); nunca lanza. */
+export function saveSession(storage: Pick<Storage, 'setItem'> | null, dinner: Dinner, now = Date.now()): boolean {
+  if (!storage) return false;
   try {
-    storage?.setItem(KEY, JSON.stringify({ version: VERSION, guardado: now, dinner }));
+    storage.setItem(KEY, JSON.stringify({ version: VERSION, guardado: now, dinner }));
+    return true;
   } catch {
-    // lleno o bloqueado: seguimos sin guardar
+    return false;
   }
 }
 

@@ -1,10 +1,10 @@
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
 import { Plus, X } from '@phosphor-icons/react';
-import type { Linea, Persona } from '../types';
+import type { Dinner, Linea } from '../types';
 import type { Act } from '../useDinner';
 import type { Block } from '../lib/calc';
-import { addPersonToLines, removeLine } from '../lib/dinner';
+import { addPersonToLines, nombreDe, removeLine } from '../lib/dinner';
 import { formatEuros } from '../lib/money';
 import { exitFast, itemExit } from '../motion';
 import { Euros } from './Euros';
@@ -14,17 +14,16 @@ const fila = 'flex items-center gap-2';
 /** Lo que comparte un grupo de personas: sus líneas, editar/borrar y añadir gente o platos. */
 export function BlockCard(props: {
   block: Block;
-  personas: Persona[];
+  dinner: Dinner;
   act: Act;
   onEdit: (l: Linea) => void;
   onAddProduct: (personas: string[]) => void;
 }) {
-  const { block: b, personas, act, onEdit, onAddProduct } = props;
-  const nombre = (id: string) => personas.find(p => p.id === id)?.nombre ?? '?';
+  const { block: b, dinner, act, onEdit, onAddProduct } = props;
   const partes = Object.values(b.cuotas);
   const min = Math.min(...partes);
   const max = Math.max(...partes);
-  const fuera = personas.filter(p => !b.personas.includes(p.id));
+  const fuera = dinner.personas.filter(p => !b.personas.includes(p.id));
 
   return (
     <m.article
@@ -35,7 +34,7 @@ export function BlockCard(props: {
       className="mb-3 rounded-box border border-line bg-surface px-4 pt-3.5 pb-3"
     >
       <div className={fila}>
-        <h3 className="flex-1 font-semibold">{b.personas.map(nombre).join(' + ')}</h3>
+        <h3 className="flex-1 font-semibold">{b.personas.map(id => nombreDe(dinner, id)).join(' + ')}</h3>
         <Euros cents={b.total} className="font-semibold" />
       </div>
       {b.personas.length > 1 && (
