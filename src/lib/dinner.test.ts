@@ -29,6 +29,17 @@ test('addLine valida cantidad y personas', () => {
   expect(addLine(base(), l).lineas[0]).toEqual({ id: 'l3', ...l });
 });
 
+test('addLine suma a la línea del mismo plato y grupo; otro grupo u otro precio es otra línea', () => {
+  const l = { producto: 'Morcilla', precio: 650, cantidad: 1, personas: ['p1'] };
+  let d = addLine(addLine(base(), l), l);
+  expect(d.lineas).toEqual([{ id: 'l3', ...l, cantidad: 2 }]);
+  // el mismo grupo marcado en otro orden sigue siendo el mismo grupo
+  d = addLine(addLine(d, { ...l, personas: ['p1', 'p2'] }), { ...l, cantidad: 2, personas: ['p2', 'p1'] });
+  expect(d.lineas.map(x => [x.personas, x.cantidad])).toEqual([[['p1'], 2], [['p1', 'p2'], 3]]);
+  // si la carta cambió de precio, la línea nueva no se mezcla con la vieja
+  expect(addLine(d, { ...l, precio: 700 }).lineas).toHaveLength(3);
+});
+
 test('updateLine, removeLine y addPersonToLines', () => {
   let d = addLine(base(), { producto: 'Patatas', precio: 400, cantidad: 1, personas: ['p1'] });
   d = updateLine(d, 'l3', { cantidad: 2 });

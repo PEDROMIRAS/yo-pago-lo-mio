@@ -34,9 +34,15 @@ function checkLine(d: Dinner, l: Pick<Linea, 'cantidad' | 'personas'>): void {
   if (l.personas.length === 0 || !l.personas.every(p => ids.has(p))) throw new Error('Elige al menos una persona');
 }
 
+const mismoGrupo = (a: string[], b: string[]) => a.length === b.length && a.every(id => b.includes(id));
+
+/** Si ese grupo ya tiene el mismo plato (y al mismo precio), se suma a su cantidad en vez de crear otra línea. */
 export function addLine(d: Dinner, l: Omit<Linea, 'id'>): Dinner {
   checkLine(d, l);
-  const linea: Linea = { id: `l${d.nextId}`, ...l, personas: [...new Set(l.personas)] };
+  const personas = [...new Set(l.personas)];
+  const igual = d.lineas.find(x => x.producto === l.producto && x.precio === l.precio && mismoGrupo(x.personas, personas));
+  if (igual) return { ...d, lineas: d.lineas.map(x => (x === igual ? { ...x, cantidad: x.cantidad + l.cantidad } : x)) };
+  const linea: Linea = { id: `l${d.nextId}`, ...l, personas };
   return { ...d, lineas: [...d.lineas, linea], nextId: d.nextId + 1 };
 }
 

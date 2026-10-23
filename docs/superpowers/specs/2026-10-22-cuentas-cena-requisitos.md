@@ -65,7 +65,8 @@ uno y quién tiene que pagar a quién para cuadrar.
    formulario:
    - **Cantidad** (entero ≥ 1).
    - **Personas** que lo comparten (casillas + botón “Todos”). Al menos una.
-   - Aceptar → se añade una **línea de pedido**.
+   - Aceptar → se añade una **línea de pedido**. Si esas mismas personas ya tienen
+     ese plato (al mismo precio), se suma a su cantidad en vez de crear otra línea.
 4. **Añadir desde una persona**: al tocar a una persona, la carta queda “a nombre de”
    esa persona: el formulario se abre con solo ella marcada y cantidad 1.
 5. **Resumen**, dos vistas:
