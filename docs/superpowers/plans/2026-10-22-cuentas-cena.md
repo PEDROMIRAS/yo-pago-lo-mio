@@ -171,7 +171,7 @@ git commit -m "feat: proyecto Vite+React y utilidades de dinero"
 - Consumes: `Menu`, `MenuItem`, `RestauranteRef`.
 - Produces: `normalizeText(s: string): string` (minúsculas, sin tildes), `normalizeMenu(json: unknown): Menu` (lanza `Error` legible), `matchesQuery(item: MenuItem, query: string): boolean`, `loadRestaurants(): Promise<RestauranteRef[]>`, `loadMenu(id: string): Promise<Menu>`.
 
-- [ ] **Step 1: Escribir los tests que fallan**
+- [x] **Step 1: Escribir los tests que fallan**
 
 ```ts
 import { expect, test } from 'vitest';
@@ -214,25 +214,25 @@ test('todas las cartas de index.json existen y cargan', () => {
 
 `import.meta.glob` (de Vite, funciona en Vitest) en vez de `node:fs`, para no necesitar los tipos de Node en `tsconfig.app.json`.
 
-- [ ] **Step 2: Ejecutar y ver que falla**
+- [x] **Step 2: Ejecutar y ver que falla**
 
 Run: `npx vitest run src/lib/menu.test.ts`
 Expected: FAIL — no se puede resolver `./menu`.
 
-- [ ] **Step 3: Implementar `src/lib/menu.ts`**
+- [x] **Step 3: Implementar `src/lib/menu.ts`**
 
 Precio a céntimos con `Math.round(precio * 100)`. Normalizar texto con `.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()`. `loadRestaurants`/`loadMenu` hacen `fetch(import.meta.env.BASE_URL + 'restaurantes/…json')`, lanzan `Error('No se pudo cargar la carta')` si `!res.ok`, y `loadMenu` pasa el resultado por `normalizeMenu`. Los fetch no se testean aquí.
 
-- [ ] **Step 4: Crear los JSON**
+- [x] **Step 4: Crear los JSON**
 
 `public/restaurantes/index.json` y `public/restaurantes/padillas.json` ya existen con la carta real de Merendero Padilla (78 productos): no los toques. El último test del Step 1 comprueba que cargan, y como `npm test` corre en el despliegue, una carta nueva con una errata (precio como texto, id sin fichero) para el build en vez de fallar en la mesa.
 
-- [ ] **Step 5: Ejecutar y ver que pasa**
+- [x] **Step 5: Ejecutar y ver que pasa**
 
 Run: `npx vitest run src/lib/menu.test.ts`
 Expected: PASS (5 tests)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add -A
