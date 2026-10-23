@@ -16,5 +16,12 @@ export const item: Variants = {
   show: (i: number = 0) => ({ opacity: 1, y: 0, transition: { ...springSoft, delay: Math.min(i, 8) * 0.035 } }),
 };
 
+/** Cambio de pantalla o pestaña: `custom` es la dirección (+1 avanza, -1 vuelve). */
+export const slide: Variants = {
+  enter: (d: number) => ({ x: d * 28, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (d: number) => ({ x: d * -28, opacity: 0, transition: exitFast }),
+};
+
 /** Salida de una fila borrada; las demás suben con `layout`. */
 export const itemExit = { opacity: 0, x: -24, transition: exitFast };

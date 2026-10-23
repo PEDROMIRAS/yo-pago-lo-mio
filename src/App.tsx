@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
-import { CaretRight, List, Receipt, Users, Wallet, X, type Icon } from '@phosphor-icons/react';
+import { List, Receipt, Users, Wallet, X, type Icon } from '@phosphor-icons/react';
 import type { RestauranteRef } from './types';
 import { useDinner } from './useDinner';
 import { loadRestaurants } from './lib/menu';
 import { browserStorage, loadSession } from './lib/storage';
 import { payStatus } from './lib/calc';
-import { exitFast } from './motion';
+import { exitFast, slide } from './motion';
 import { PeopleTab } from './components/PeopleTab';
 import { MenuTab } from './components/MenuTab';
 import { SummaryTab } from './components/SummaryTab';
 import { PayTab } from './components/PayTab';
 import { Skeleton } from './components/Skeleton';
 import { Euros } from './components/Euros';
+import { Inicio, Restaurantes } from './components/Inicio';
 
 type Tab = 'gente' | 'carta' | 'resumen' | 'pagar';
 const TABS: { id: Tab; label: string; icon: Icon }[] = [
@@ -36,6 +37,8 @@ export default function App() {
   const [intento, setIntento] = useState(0);
   // dir: +1 hacia la derecha de la barra, -1 hacia la izquierda; decide de qué lado entra la pestaña
   const [{ tab, dir }, setNav] = useState<{ tab: Tab; dir: number }>({ tab: 'gente', dir: 1 });
+  // antes de tener cena: portada o elegir restaurante, con la misma dirección de deslizamiento
+  const [inicio, setInicio] = useState<{ pantalla: 'inicio' | 'restaurantes'; dir: number }>({ pantalla: 'inicio', dir: 1 });
   const [activePersona, setActivePersona] = useState<string | null>(null);
   const [ultimas, setUltimas] = useState<string[]>([]); // última selección del diálogo de la carta
 
@@ -62,67 +65,57 @@ export default function App() {
     reset();
     setSaved(null);
     setNav({ tab: 'gente', dir: 1 });
+    setInicio({ pantalla: 'inicio', dir: -1 });
     setActivePersona(null);
     setUltimas([]);
   };
 
   if (!dinner) {
-    if (saved) {
-      const n = saved.dinner.personas.length;
-      return (
-        <m.main className={pantalla} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <p>
-            ¿Continuar la cena en <strong>{nombreDe(saved.dinner.restauranteId)}</strong> ({n}{' '}
-            {n === 1 ? 'persona' : 'personas'}, guardada a las {hora(saved.guardado)}) o empezar una nueva?
-          </p>
-          <button type="button" className="btn btn-primary" onClick={() => resume(saved.dinner)}>
-            Continuar
-          </button>
-          <button type="button" className="btn" onClick={nueva}>
-            Nueva cena
-          </button>
-        </m.main>
-      );
-    }
+    const guardada = saved && {
+      restaurante: nombreDe(saved.dinner.restauranteId),
+      personas: saved.dinner.personas.length,
+      hora: hora(saved.guardado),
+    };
     return (
-      <main className={pantalla}>
-        <m.h1 className="text-[2rem] font-bold" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          Yo pago lo mío
-        </m.h1>
-        <p>¿Dónde cenáis?</p>
-        {restError ? (
-          <>
-            <p className="text-error">No se pudo cargar la lista de restaurantes</p>
-            <button
-              type="button"
-              className="btn"
-              onClick={() => {
-                setRestError(false);
-                setIntento(i => i + 1);
-              }}
-            >
-              Reintentar
-            </button>
-          </>
-        ) : !restaurantes ? (
-          <Skeleton filas={2} alto={60} />
-        ) : (
-          <ul className="grid gap-2.5">
-            {restaurantes.map((r, i) => (
-              <m.li key={r.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.04 }}>
-                <button
-                  type="button"
-                  className="btn min-h-15 w-full justify-between border-line bg-surface px-4 font-semibold shadow-soft"
-                  onClick={() => start(r.id)}
-                >
-                  {r.nombre}
-                  <CaretRight className="text-muted" />
-                </button>
-              </m.li>
-            ))}
-          </ul>
-        )}
-      </main>
+      <div className="overflow-x-clip">
+        <AnimatePresence mode="wait" custom={inicio.dir}>
+          <m.main
+            key={inicio.pantalla}
+            custom={inicio.dir}
+            className="mx-auto max-w-120 px-4 pt-10 pb-8"
+            variants={slide}
+            initial="enter"
+            animate="center"
+            exit="exit"
+          >
+            {inicio.pantalla === 'inicio' ? (
+              <Inicio
+                guardada={guardada}
+                onContinuar={() => saved && resume(saved.dinner)}
+                onNueva={() => {
+                  // empezar otra cena sustituye a la guardada: preguntar antes de perderla
+                  if (saved && !confirm('Hay una cena guardada. ¿Empezar otra y borrarla?')) return;
+                  setInicio({ pantalla: 'restaurantes', dir: 1 });
+                }}
+              />
+            ) : (
+              <Restaurantes
+                restaurantes={restaurantes}
+                error={restError}
+                onReintentar={() => {
+                  setRestError(false);
+                  setIntento(i => i + 1);
+                }}
+                onElegir={id => {
+                  setSaved(null);
+                  start(id);
+                }}
+                onVolver={() => setInicio({ pantalla: 'inicio', dir: -1 })}
+              />
+            )}
+          </m.main>
+        </AnimatePresence>
+      </div>
     );
   }
 
@@ -176,11 +169,7 @@ export default function App() {
             key={tab}
             custom={dir}
             className="mx-auto max-w-120 px-4 pt-5 pb-28"
-            variants={{
-              enter: (d: number) => ({ x: d * 28, opacity: 0 }),
-              center: { x: 0, opacity: 1 },
-              exit: (d: number) => ({ x: d * -28, opacity: 0, transition: exitFast }),
-            }}
+            variants={slide}
             initial="enter"
             animate="center"
             exit="exit"
